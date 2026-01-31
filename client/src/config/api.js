@@ -105,3 +105,27 @@ export const searchAPI = {
     search: (params) => api.get('/search', { params }),
     getSuggestions: (params) => api.get('/search/suggestions', { params }),
 };
+
+// Utilisateurs
+export const usersAPI = {
+    getAll: (params) => api.get('/users', { params }),
+    getById: (id) => api.get(`/users/${id}`),
+    create: (data) => api.post('/users', data),
+    update: (id, data) => api.put(`/users/${id}`, data),
+    delete: (id) => api.delete(`/users/${id}`),
+    getStats: () => api.get('/users/stats'),
+};
+
+// Stats
+export const statsAPI = {
+    getDashboard: () => api.get('/stats/dashboard'),
+};
+
+// Services
+export const servicesAPI = {
+    getAll: () => api.get('/services'),
+    getById: (id) => api.get(`/services/${id}`),
+    create: (data) => api.post('/services', data),
+    update: (id, data) => api.put(`/services/${id}`, data),
+    delete: (id) => api.delete(`/services/${id}`),
+};

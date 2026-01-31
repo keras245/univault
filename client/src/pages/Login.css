@@ -8,6 +8,13 @@
     padding: var(--spacing-lg);
 }
 
+.login-theme-toggle {
+    position: absolute;
+    top: var(--spacing-xl);
+    right: var(--spacing-xl);
+    z-index: 10;
+}
+
 .login-background {
     position: absolute;
     inset: 0;

@@ -1,0 +1,27 @@
+.dashboard-page {
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, var(--color-bg-primary), rgba(59, 130, 246, 0.05), rgba(168, 85, 247, 0.05));
+    padding: var(--spacing-2xl);
+}
+
+.dashboard-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.dashboard-title {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 var(--spacing-lg) 0;
+}
+
+.dashboard-subtitle {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-lg);
+    margin: 0;
+}

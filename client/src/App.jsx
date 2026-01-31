@@ -1,8 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
+import useThemeStore from './store/themeStore';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Administrateur from './pages/Administrateur';
+import Gestion from './pages/Gestion';
+import Document from './pages/Document';
 import './index.css';
 
 // Create a client for React Query
@@ -37,23 +43,14 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-// Placeholder Dashboard Component
-const Dashboard = () => {
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
-
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Dashboard - En cours de développement</h1>
-      <p>Bienvenue {user?.firstName} {user?.lastName}</p>
-      <p>Service: {user?.service}</p>
-      <p>Rôle: {user?.role}</p>
-      <button onClick={logout}>Déconnexion</button>
-    </div>
-  );
-};
-
 function App() {
+  const { theme } = useThemeStore();
+
+  // Appliquer le thème au montage
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -77,6 +74,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/administrateur"
+            element={
+              <ProtectedRoute>
+                <Administrateur />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/gestion"
+            element={
+              <ProtectedRoute>
+                <Gestion />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/document"
+            element={
+              <ProtectedRoute>
+                <Document />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -91,20 +112,20 @@ function App() {
           toastOptions={{
             duration: 4000,
             style: {
-              background: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
+              background: '#1f2937',
+              color: '#fff',
+              borderRadius: '12px',
+              padding: '16px',
             },
             success: {
               iconTheme: {
-                primary: 'var(--color-success)',
+                primary: '#10b981',
                 secondary: 'white',
               },
             },
             error: {
               iconTheme: {
-                primary: 'var(--color-error)',
+                primary: '#ef4444',
                 secondary: 'white',
               },
             },
