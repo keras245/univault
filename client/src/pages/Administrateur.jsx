@@ -103,9 +103,9 @@ const Administrateur = () => {
                         </div>
                         <Button
                             variant="primary"
-                            size="large"
+                            size="medium"
                             onClick={handleCreate}
-                            leftIcon={<Plus size={20} />}
+                            leftIcon={<Plus size={18} />}
                         >
                             Nouvel Administrateur
                         </Button>

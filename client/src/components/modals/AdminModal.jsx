@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Mail, Building2, Shield, Eye, EyeOff, Lock, UserPlus } from 'lucide-react';
+import { X, User, Mail, Building2, Shield, Eye, EyeOff, Lock, UserPlus, Save } from 'lucide-react';
 import { usersAPI } from '../../config/api';
 import toast from 'react-hot-toast';
 import Input from '../ui/Input';
@@ -317,7 +317,7 @@ const AdminModal = ({ isOpen, onClose, admin = null, onSuccess }) => {
                             <Button
                                 type="button"
                                 variant="secondary"
-                                size="large"
+                                size="medium"
                                 onClick={onClose}
                                 fullWidth
                             >
@@ -326,9 +326,10 @@ const AdminModal = ({ isOpen, onClose, admin = null, onSuccess }) => {
                             <Button
                                 type="submit"
                                 variant="primary"
-                                size="large"
+                                size="medium"
                                 isLoading={loading}
                                 fullWidth
+                                leftIcon={<Save size={16} />}
                             >
                                 {isEditMode ? 'Modifier' : 'Créer'}
                             </Button>
