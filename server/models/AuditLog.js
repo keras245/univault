@@ -17,6 +17,7 @@ const auditLogSchema = new mongoose.Schema({
             'view',
             'delete',
             'update',
+            'list_users',
             'create_user',
             'delete_user',
             'update_user',
