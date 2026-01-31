@@ -14,7 +14,12 @@ export const getUsers = async (req, res) => {
         const filter = {};
 
         if (role) {
-            filter.role = role;
+            // Gérer les tableaux de rôles (ex: role[]=admin&role[]=super-admin)
+            if (Array.isArray(role)) {
+                filter.role = { $in: role };
+            } else {
+                filter.role = role;
+            }
         }
 
         if (service) {
