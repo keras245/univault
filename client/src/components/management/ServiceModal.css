@@ -1,0 +1,21 @@
+/* Utilise les mêmes styles que AdminModal */
+@import '../modals/AdminModal.css';
+
+/* Header orange pour les services */
+.modal-header--orange {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+/* Section icon orange */
+.modal-section-icon--orange {
+    background-color: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+}
+
+/* Textarea */
+.service-textarea {
+    min-height: 80px;
+    resize: vertical;
+    padding-top: var(--spacing-md);
+    line-height: 1.5;
+}

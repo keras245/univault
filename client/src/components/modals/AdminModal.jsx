@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Mail, Building2, Shield, Eye, EyeOff, Lock, UserPlus, Save } from 'lucide-react';
-import { usersAPI } from '../../config/api';
+import { usersAPI, servicesAPI } from '../../config/api';
 import toast from 'react-hot-toast';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
@@ -10,6 +10,8 @@ import './AdminModal.css';
 const AdminModal = ({ isOpen, onClose, admin = null, onSuccess }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [services, setServices] = useState([]);
+    const [loadingServices, setLoadingServices] = useState(true);
     const isEditMode = !!admin;
 
     const [formData, setFormData] = useState({
@@ -17,12 +19,38 @@ const AdminModal = ({ isOpen, onClose, admin = null, onSuccess }) => {
         lastName: '',
         email: '',
         password: '',
-        service: 'Scolarité',
+        service: '',
         role: 'admin',
         isActive: true
     });
 
     const [errors, setErrors] = useState({});
+
+    // Charger les services
+    useEffect(() => {
+        const fetchServices = async () => {
+            try {
+                setLoadingServices(true);
+                const response = await servicesAPI.getAll();
+                const servicesList = response.data.data || [];
+                setServices(servicesList);
+                
+                // Définir le premier service comme valeur par défaut
+                if (!admin && servicesList.length > 0) {
+                    setFormData(prev => ({ ...prev, service: servicesList[0].name }));
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des services:', error);
+                setServices([]);
+            } finally {
+                setLoadingServices(false);
+            }
+        };
+
+        if (isOpen) {
+            fetchServices();
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (admin) {
@@ -31,7 +59,7 @@ const AdminModal = ({ isOpen, onClose, admin = null, onSuccess }) => {
                 lastName: admin.lastName || '',
                 email: admin.email || '',
                 password: '',
-                service: admin.service || 'Scolarité',
+                service: admin.service || '',
                 role: admin.role || 'admin',
                 isActive: admin.isActive !== undefined ? admin.isActive : true
             });
@@ -41,24 +69,14 @@ const AdminModal = ({ isOpen, onClose, admin = null, onSuccess }) => {
                 lastName: '',
                 email: '',
                 password: '',
-                service: 'Scolarité',
+                service: services.length > 0 ? services[0].name : '',
                 role: 'admin',
                 isActive: true
             });
         }
         setErrors({});
         setShowPassword(false);
-    }, [admin, isOpen]);
-
-    const services = [
-        'Scolarité',
-        'Comptabilité',
-        'Ressources Humaines',
-        'Génie Informatique',
-        'Droit',
-        'Administration',
-        'Autre'
-    ];
+    }, [admin, isOpen, services]);
 
     const validate = () => {
         const newErrors = {};
@@ -225,26 +243,33 @@ const AdminModal = ({ isOpen, onClose, admin = null, onSuccess }) => {
                             />
 
                             <div className="modal-form-grid">
-                                <div className="input-wrapper">
-                                    <label className="input-label">
-                                        Service <span className="input-required">*</span>
-                                    </label>
-                                    <div className="input-container">
-                                        <span className="input-icon input-icon--left">
-                                            <Building2 size={18} />
-                                        </span>
-                                        <select
-                                            name="service"
-                                            value={formData.service}
-                                            onChange={handleChange}
-                                            className="input input--with-left-icon modal-select"
-                                        >
-                                            {services.map(service => (
-                                                <option key={service} value={service}>{service}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                            <div className="input-wrapper">
+                                <label className="input-label">
+                                    Service <span className="input-required">*</span>
+                                </label>
+                                <div className="input-container">
+                                    <span className="input-icon input-icon--left">
+                                        <Building2 size={18} />
+                                    </span>
+                                    <select
+                                        name="service"
+                                        value={formData.service}
+                                        onChange={handleChange}
+                                        className="input input--with-left-icon modal-select"
+                                        disabled={loadingServices}
+                                    >
+                                        {loadingServices ? (
+                                            <option value="">Chargement...</option>
+                                        ) : services.length === 0 ? (
+                                            <option value="">Aucun service disponible</option>
+                                        ) : (
+                                            services.filter(s => s.isActive).map(service => (
+                                                <option key={service._id} value={service.name}>{service.name}</option>
+                                            ))
+                                        )}
+                                    </select>
                                 </div>
+                            </div>
 
                                 <div className="input-wrapper">
                                     <label className="input-label">

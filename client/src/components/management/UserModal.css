@@ -1,0 +1,7 @@
+/* Utilise les mêmes styles que AdminModal */
+@import '../modals/AdminModal.css';
+
+/* Header vert pour les utilisateurs */
+.modal-header--green {
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+}

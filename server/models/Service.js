@@ -33,21 +33,9 @@ const serviceSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
     }
-});
-
-// Middleware pour mettre à jour updatedAt
-serviceSchema.pre('save', function (next) {
-    this.updatedAt = Date.now();
-    next();
+}, {
+    timestamps: true
 });
 
 // Index pour recherche rapide
