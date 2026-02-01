@@ -156,7 +156,7 @@ export const createUser = async (req, res) => {
  */
 export const updateUser = async (req, res) => {
     try {
-        const { firstName, lastName, service, role, isActive } = req.body;
+        const { firstName, lastName, service, role, isActive, password } = req.body;
 
         const user = await User.findById(req.params.id);
 
@@ -173,6 +173,11 @@ export const updateUser = async (req, res) => {
         if (service) user.service = service;
         if (role) user.role = role;
         if (isActive !== undefined) user.isActive = isActive;
+        
+        // Mettre à jour le mot de passe si fourni
+        if (password && password.trim() !== '') {
+            user.password = password;
+        }
 
         await user.save();
 

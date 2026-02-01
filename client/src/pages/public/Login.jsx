@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import Card from '../components/ui/Card';
-import ThemeToggle from '../components/ui/ThemeToggle';
-import { authAPI } from '../config/api';
-import useAuthStore from '../store/authStore';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Card from '../../components/ui/Card';
+import ThemeToggle from '../../components/ui/ThemeToggle';
+import { authAPI } from '../../config/api';
+import useAuthStore from '../../store/authStore';
 import './Login.css';
 
 const Login = () => {

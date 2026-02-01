@@ -1,10 +1,10 @@
-import Sidebar from './Sidebar';
-import './MainLayout.css';
+import AdminSidebar from './AdminSidebar';
+import './AdminLayout.css';
 
-const MainLayout = ({ children }) => {
+const AdminLayout = ({ children }) => {
     return (
         <div className="main-layout">
-            <Sidebar />
+            <AdminSidebar />
             <main className="main-layout-content">
                 {children}
             </main>
@@ -12,4 +12,4 @@ const MainLayout = ({ children }) => {
     );
 };
 
-export default MainLayout;
+export default AdminLayout;

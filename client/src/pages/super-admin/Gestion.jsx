@@ -10,9 +10,9 @@ import {
   BarChart3,
   TrendingUp
 } from 'lucide-react';
-import MainLayout from '../components/layout/MainLayout';
-import UsersManagement from '../components/management/UsersManagement';
-import ServicesManagement from '../components/management/ServicesManagement';
+import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
+import UsersManagement from '../../components/super-admin/UsersManagement';
+import ServicesManagement from '../../components/super-admin/ServicesManagement';
 import './Gestion.css';
 
 const Gestion = () => {
@@ -43,7 +43,7 @@ const Gestion = () => {
   const currentTab = tabs.find(tab => tab.id === activeTab);
 
   return (
-    <MainLayout>
+    <SuperAdminLayout>
       <div className="gestion-page">
         {/* En-tête avec statistiques */}
         <motion.div
@@ -110,7 +110,7 @@ const Gestion = () => {
           </motion.div>
         </AnimatePresence>
       </div>
-    </MainLayout>
+    </SuperAdminLayout>
   );
 };
 

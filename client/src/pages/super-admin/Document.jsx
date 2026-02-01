@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
-import MainLayout from '../components/layout/MainLayout';
-import './Dashboard.css';
+import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
+import '../../styles/Dashboard.css';
 
 const Document = () => {
     return (
-        <MainLayout>
+        <SuperAdminLayout>
             <div className="dashboard-page">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -18,7 +18,7 @@ const Document = () => {
                     </p>
                 </motion.div>
             </div>
-        </MainLayout>
+        </SuperAdminLayout>
     );
 };
 

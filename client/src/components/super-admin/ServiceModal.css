@@ -1,5 +1,5 @@
 /* Utilise les mêmes styles que AdminModal */
-@import '../modals/AdminModal.css';
+@import './AdminModal.css';
 
 /* Header orange pour les services */
 .modal-header--orange {

@@ -3,18 +3,18 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard,
-    UserCog,
-    Settings,
     FileText,
+    Search,
+    Bell,
     ChevronLeft,
     ChevronRight,
     LogOut
 } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
-import ThemeToggle from '../ui/ThemeToggle';
-import './Sidebar.css';
+import useAuthStore from '../../../store/authStore';
+import ThemeToggle from '../../ui/ThemeToggle';
+import './UserSidebar.css';
 
-const Sidebar = () => {
+const UserSidebar = () => {
     const [isExpanded, setIsExpanded] = useState(true);
     const { user, logout } = useAuthStore();
     const navigate = useNavigate();
@@ -26,24 +26,24 @@ const Sidebar = () => {
 
     const menuItems = [
         {
-            path: '/dashboard',
+            path: '/user/dashboard',
             icon: LayoutDashboard,
             label: 'Tableau de bord',
         },
         {
-            path: '/administrateur',
-            icon: UserCog,
-            label: 'Administrateur',
-        },
-        {
-            path: '/gestion',
-            icon: Settings,
-            label: 'Gestion',
-        },
-        {
-            path: '/document',
+            path: '/user/documents',
             icon: FileText,
-            label: 'Document',
+            label: 'Mes Documents',
+        },
+        {
+            path: '/user/search',
+            icon: Search,
+            label: 'Recherche',
+        },
+        {
+            path: '/user/notifications',
+            icon: Bell,
+            label: 'Notifications',
         }
     ];
 
@@ -65,7 +65,7 @@ const Sidebar = () => {
                                 <div className="sidebar-logo-icon">🏛️</div>
                                 <div className="sidebar-logo-text">
                                     <h2 className="sidebar-logo-title">UniVault</h2>
-                                    <p className="sidebar-logo-subtitle">Archive Numérique</p>
+                                    <p className="sidebar-logo-subtitle">Portail Utilisateur</p>
                                 </div>
                             </motion.div>
                         ) : (
@@ -139,7 +139,7 @@ const Sidebar = () => {
                                 <p className="sidebar-user-name">
                                     {user?.firstName} {user?.lastName}
                                 </p>
-                                <p className="sidebar-user-email">{user?.email}</p>
+                                <p className="sidebar-user-email">{user?.service}</p>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -166,4 +166,4 @@ const Sidebar = () => {
     );
 };
 
-export default Sidebar;
+export default UserSidebar;

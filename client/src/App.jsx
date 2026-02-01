@@ -4,11 +4,27 @@ import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import useThemeStore from './store/themeStore';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Administrateur from './pages/Administrateur';
-import Gestion from './pages/Gestion';
-import Document from './pages/Document';
+
+// Public Pages
+import Login from './pages/public/Login';
+
+// Super Admin Pages
+import SuperAdminDashboard from './pages/super-admin/Dashboard';
+import Administrateur from './pages/super-admin/Administrateur';
+import Gestion from './pages/super-admin/Gestion';
+import SuperAdminDocument from './pages/super-admin/Document';
+
+// Admin Pages (Chefs de service)
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminDocuments from './pages/admin/Documents';
+import AdminTeam from './pages/admin/Team';
+
+// User Pages
+import UserDashboard from './pages/user/Dashboard';
+import UserDocuments from './pages/user/Documents';
+import UserSearch from './pages/user/Search';
+import UserNotifications from './pages/user/Notifications';
+
 import './index.css';
 
 // Create a client for React Query
@@ -22,11 +38,16 @@ const queryClient = new QueryClient({
 });
 
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Si allowedRoles est spécifié, vérifier le rôle
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children;
@@ -34,10 +55,19 @@ const ProtectedRoute = ({ children }) => {
 
 // Public Route Component (redirect if already logged in)
 const PublicRoute = ({ children }) => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isAuthenticated, user } = useAuthStore();
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    // Redirection basée sur le rôle
+    if (user?.role === 'super-admin') {
+      return <Navigate to="/super-admin/dashboard" replace />;
+    }
+    if (user?.role === 'admin') {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    if (user?.role === 'user') {
+      return <Navigate to="/user/dashboard" replace />;
+    }
   }
 
   return children;
@@ -55,7 +85,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
+          {/* ========== PUBLIC ROUTES ========== */}
           <Route
             path="/login"
             element={
@@ -65,19 +95,19 @@ function App() {
             }
           />
 
-          {/* Protected Routes */}
+          {/* ========== SUPER ADMIN ROUTES ========== */}
           <Route
-            path="/dashboard"
+            path="/super-admin/dashboard"
             element={
-              <ProtectedRoute>
-                <Dashboard />
+              <ProtectedRoute allowedRoles={['super-admin']}>
+                <SuperAdminDashboard />
               </ProtectedRoute>
             }
           />
           <Route
             path="/administrateur"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['super-admin']}>
                 <Administrateur />
               </ProtectedRoute>
             }
@@ -85,7 +115,7 @@ function App() {
           <Route
             path="/gestion"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['super-admin']}>
                 <Gestion />
               </ProtectedRoute>
             }
@@ -93,17 +123,102 @@ function App() {
           <Route
             path="/document"
             element={
-              <ProtectedRoute>
-                <Document />
+              <ProtectedRoute allowedRoles={['super-admin']}>
+                <SuperAdminDocument />
               </ProtectedRoute>
             }
           />
 
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* ========== ADMIN ROUTES (Chefs de service) ========== */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/documents"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDocuments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/team"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminTeam />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* 404 */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* ========== USER ROUTES ========== */}
+          <Route
+            path="/user/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/documents"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <UserDocuments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/search"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <UserSearch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/notifications"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <UserNotifications />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ========== DEFAULT REDIRECTS ========== */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          
+          {/* Backward compatibility */}
+          <Route path="/dashboard" element={<Navigate to="/super-admin/dashboard" replace />} />
+
+          {/* ========== UNAUTHORIZED ========== */}
+          <Route
+            path="/unauthorized"
+            element={
+              <div style={{ 
+                padding: '2rem', 
+                textAlign: 'center',
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</h1>
+                <h2>Accès non autorisé</h2>
+                <p style={{ color: 'var(--color-text-secondary)' }}>
+                  Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+                </p>
+              </div>
+            }
+          />
+
+          {/* ========== 404 ========== */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
 
         {/* Toast Notifications */}

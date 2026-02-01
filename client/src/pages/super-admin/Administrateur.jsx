@@ -12,11 +12,11 @@ import {
     CheckCircle,
     XCircle
 } from 'lucide-react';
-import MainLayout from '../components/layout/MainLayout';
-import { usersAPI } from '../config/api';
+import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
+import { usersAPI } from '../../config/api';
 import toast from 'react-hot-toast';
-import AdminModal from '../components/modals/AdminModal';
-import Button from '../components/ui/Button';
+import AdminModal from '../../components/super-admin/AdminModal';
+import Button from '../../components/ui/Button';
 import './Administrateur.css';
 
 const Administrateur = () => {
@@ -84,7 +84,7 @@ const Administrateur = () => {
     };
 
     return (
-        <MainLayout>
+        <SuperAdminLayout>
             <div className="admin-page">
                 {/* Header */}
                 <motion.div
@@ -301,7 +301,7 @@ const Administrateur = () => {
                 admin={selectedAdmin}
                 onSuccess={handleModalSuccess}
             />
-        </MainLayout>
+        </SuperAdminLayout>
     );
 };
 
