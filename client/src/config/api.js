@@ -85,12 +85,6 @@ export const documentsAPI = {
     }),
 };
 
-// Scolarité
-export const studentsAPI = {
-    getByMatricule: (matricule) => api.get(`/students/${matricule}`),
-    getDocuments: (matricule, params) => api.get(`/students/${matricule}/documents`, { params }),
-};
-
 // Courriers RH
 export const lettersAPI = {
     create: (data) => api.post('/letters', data),
@@ -128,4 +122,26 @@ export const servicesAPI = {
     create: (data) => api.post('/services', data),
     update: (id, data) => api.put(`/services/${id}`, data),
     delete: (id) => api.delete(`/services/${id}`),
+};
+
+// Students (Étudiants)
+export const studentsAPI = {
+    getAll: (params) => api.get('/students', { params }),
+    getById: (id) => api.get(`/students/${id}`),
+    create: (data) => api.post('/students', data),
+    update: (id, data) => api.put(`/students/${id}`, data),
+    delete: (id) => api.delete(`/students/${id}`),
+    getStats: () => api.get('/students/stats'),
+    importExcel: (formData) => api.post('/students/import/excel', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+};
+
+// Student Documents
+export const studentDocumentsAPI = {
+    getByStudent: (studentId) => api.get(`/students/${studentId}/documents`),
+    upload: (studentId, formData) => api.post(`/students/${studentId}/documents`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    delete: (studentId, docId) => api.delete(`/students/${studentId}/documents/${docId}`),
 };

@@ -1,0 +1,111 @@
+.upload-file-zone {
+    margin-top: var(--spacing-lg);
+}
+
+.upload-file-label {
+    display: block;
+    cursor: pointer;
+}
+
+.upload-file-input {
+    display: none;
+}
+
+.upload-file-content {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    text-align: center;
+    transition: all var(--transition-base);
+    background-color: var(--color-bg-tertiary);
+}
+
+.upload-file-content:hover {
+    border-color: var(--color-primary);
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.upload-file-content svg {
+    margin: 0 auto var(--spacing-md);
+    color: var(--color-text-muted);
+}
+
+.upload-file-name {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.upload-file-size {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.upload-file-text {
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.upload-file-subtext {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+
+/* Additional styles for search mode */
+.input-with-button {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+.student-info-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--primary-color-alpha);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.student-info-box svg {
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.student-matricule {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0.25rem 0 0 0;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-text:hover {
+    background: var(--primary-color-alpha);
+}

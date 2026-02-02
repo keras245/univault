@@ -25,6 +25,13 @@ const auditLogSchema = new mongoose.Schema({
             'create_service',
             'delete_service',
             'update_service',
+            'list_students',
+            'create_student',
+            'update_student',
+            'delete_student',
+            'import_students',
+            'upload_student_document',
+            'delete_student_document',
         ],
     },
     resource: {

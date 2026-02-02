@@ -26,8 +26,8 @@ export const uploadLimiter = rateLimit({
 
 // Rate limiter général pour l'API
 export const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // 100 requêtes maximum
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 200, // 200 requêtes maximum par minute
     message: {
         success: false,
         message: 'Trop de requêtes. Veuillez réessayer plus tard.',

@@ -6,6 +6,7 @@ import {
     FileText,
     Search,
     Bell,
+    GraduationCap,
     ChevronLeft,
     ChevronRight,
     LogOut
@@ -29,6 +30,11 @@ const UserSidebar = () => {
             path: '/user/dashboard',
             icon: LayoutDashboard,
             label: 'Tableau de bord',
+        },
+        {
+            path: '/user/students',
+            icon: GraduationCap,
+            label: 'Étudiants',
         },
         {
             path: '/user/documents',

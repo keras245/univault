@@ -5,6 +5,7 @@ import {
     LayoutDashboard,
     FileText,
     Users,
+    GraduationCap,
     ChevronLeft,
     ChevronRight,
     LogOut
@@ -28,6 +29,11 @@ const AdminSidebar = () => {
             path: '/admin/dashboard',
             icon: LayoutDashboard,
             label: 'Tableau de bord',
+        },
+        {
+            path: '/admin/students',
+            icon: GraduationCap,
+            label: 'Étudiants',
         },
         {
             path: '/admin/documents',

@@ -12,7 +12,7 @@ import Login from './pages/public/Login';
 import SuperAdminDashboard from './pages/super-admin/Dashboard';
 import Administrateur from './pages/super-admin/Administrateur';
 import Gestion from './pages/super-admin/Gestion';
-import SuperAdminDocument from './pages/super-admin/Document';
+import SuperAdminDocuments from './pages/super-admin/Documents';
 
 // Admin Pages (Chefs de service)
 import AdminDashboard from './pages/admin/Dashboard';
@@ -24,6 +24,13 @@ import UserDashboard from './pages/user/Dashboard';
 import UserDocuments from './pages/user/Documents';
 import UserSearch from './pages/user/Search';
 import UserNotifications from './pages/user/Notifications';
+
+// Scolarité Pages (partagées Admin & User)
+import Students from './pages/scolarite/Students';
+import StudentFolder from './pages/scolarite/StudentFolder';
+import SuperAdminLayout from './components/layout/super-admin/SuperAdminLayout';
+import AdminLayout from './components/layout/admin/AdminLayout';
+import UserLayout from './components/layout/user/UserLayout';
 
 import './index.css';
 
@@ -121,10 +128,26 @@ function App() {
             }
           />
           <Route
-            path="/document"
+            path="/super-admin/students"
             element={
               <ProtectedRoute allowedRoles={['super-admin']}>
-                <SuperAdminDocument />
+                <Students Layout={SuperAdminLayout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/students/:id"
+            element={
+              <ProtectedRoute allowedRoles={['super-admin']}>
+                <StudentFolder Layout={SuperAdminLayout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/documents"
+            element={
+              <ProtectedRoute allowedRoles={['super-admin']}>
+                <SuperAdminDocuments />
               </ProtectedRoute>
             }
           />
@@ -135,6 +158,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/students"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Students Layout={AdminLayout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/students/:id"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <StudentFolder Layout={AdminLayout} />
               </ProtectedRoute>
             }
           />
@@ -161,6 +200,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['user']}>
                 <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/students"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <Students Layout={UserLayout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/students/:id"
+            element={
+              <ProtectedRoute allowedRoles={['user']}>
+                <StudentFolder Layout={UserLayout} />
               </ProtectedRoute>
             }
           />

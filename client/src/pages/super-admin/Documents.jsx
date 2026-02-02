@@ -1,23 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Search, Download, Eye, Plus } from 'lucide-react';
-import UserLayout from '../../components/layout/user/UserLayout';
+import { FileText, Plus, Search, Download, Eye, Trash2, Upload as UploadIcon } from 'lucide-react';
+import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
 import { studentDocumentsAPI, studentsAPI } from '../../config/api';
-import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
 import UploadDocumentModal from '../../components/scolarite/UploadDocumentModal';
 import '../super-admin/Administrateur.css';
 
-const UserDocuments = () => {
-    const { user } = useAuthStore();
+const SuperAdminDocuments = () => {
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showUploadModal, setShowUploadModal] = useState(false);
-    const [stats, setStats] = useState({ total: 0 });
+    const [stats, setStats] = useState({ total: 0, byType: {} });
 
-    // Debounce de la recherche
+    // Debounce de la recherche (attend 500ms après la dernière frappe)
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchTerm);
@@ -34,12 +32,13 @@ const UserDocuments = () => {
         try {
             setLoading(true);
             
-            // Les étudiants sont automatiquement filtrés par service côté backend
+            // Récupérer les étudiants (filtrage automatique par service côté backend)
             const studentsResponse = await studentsAPI.getAll({ search: debouncedSearch });
             const students = studentsResponse.data.data || [];
             
-            console.log('📊 Étudiants du service', user.service, ':', students.length);
+            console.log('📊 Étudiants récupérés:', students.length);
             
+            // Récupérer tous les documents de tous les étudiants
             const allDocs = [];
             for (const student of students) {
                 try {
@@ -62,15 +61,35 @@ const UserDocuments = () => {
                 }
             }
             
-            console.log('📄 Documents du service:', allDocs.length);
+            console.log('📄 Documents récupérés:', allDocs.length);
             
             setDocuments(allDocs);
-            setStats({ total: allDocs.length });
+            
+            // Calculer les stats
+            const total = allDocs.length;
+            const byType = {};
+            allDocs.forEach(doc => {
+                byType[doc.type] = (byType[doc.type] || 0) + 1;
+            });
+            setStats({ total, byType });
         } catch (error) {
             console.error('Erreur:', error);
             toast.error('Erreur lors du chargement des documents');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (doc) => {
+        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) return;
+
+        try {
+            await studentDocumentsAPI.delete(doc.student._id, doc._id);
+            toast.success('Document supprimé');
+            fetchAllDocuments();
+        } catch (error) {
+            console.error('Erreur:', error);
+            toast.error('Erreur lors de la suppression');
         }
     };
 
@@ -106,7 +125,7 @@ const UserDocuments = () => {
     };
 
     return (
-        <UserLayout>
+        <SuperAdminLayout>
             <div className="admin-page">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -119,7 +138,7 @@ const UserDocuments = () => {
                                 Documents Étudiants
                             </h1>
                             <p className="admin-header-subtitle">
-                                Consultez et ajoutez des documents des étudiants
+                                Gérez tous les documents des étudiants
                             </p>
                         </div>
                         <button className="btn-primary" onClick={() => setShowUploadModal(true)}>
@@ -128,11 +147,12 @@ const UserDocuments = () => {
                         </button>
                     </div>
 
+                    {/* Search Bar */}
                     <div className="admin-search">
                         <Search className="admin-search-icon" size={20} />
                         <input
                             type="text"
-                            placeholder="Rechercher par matricule ou nom..."
+                            placeholder="Rechercher par matricule ou nom d'étudiant..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="admin-search-input"
@@ -140,15 +160,17 @@ const UserDocuments = () => {
                     </div>
                 </motion.div>
 
+                {/* Stats Cards */}
                 <div className="admin-stats">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
                         className="admin-stat-card"
                     >
                         <div className="admin-stat-content">
                             <div>
-                                <p className="admin-stat-label">Documents disponibles</p>
+                                <p className="admin-stat-label">Total Documents</p>
                                 <p className="admin-stat-value">{stats.total}</p>
                             </div>
                             <div className="admin-stat-icon admin-stat-icon--blue">
@@ -156,8 +178,28 @@ const UserDocuments = () => {
                             </div>
                         </div>
                     </motion.div>
+                    {Object.entries(stats.byType).slice(0, 2).map(([type, count], index) => (
+                        <motion.div
+                            key={type}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 + (index * 0.1) }}
+                            className="admin-stat-card"
+                        >
+                            <div className="admin-stat-content">
+                                <div>
+                                    <p className="admin-stat-label">{type}</p>
+                                    <p className="admin-stat-value">{count}</p>
+                                </div>
+                                <div className="admin-stat-icon admin-stat-icon--green">
+                                    <UploadIcon size={24} />
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
 
+                {/* Liste des documents */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -173,7 +215,7 @@ const UserDocuments = () => {
                         <div className="admin-empty">
                             <FileText className="admin-empty-icon" size={64} />
                             <h3 className="admin-empty-title">Aucun document</h3>
-                            <p className="admin-empty-text">Aucun document disponible pour le moment</p>
+                            <p className="admin-empty-text">Aucun document étudiant trouvé</p>
                         </div>
                     ) : (
                         <div className="admin-table-container">
@@ -230,6 +272,13 @@ const UserDocuments = () => {
                                                     >
                                                         <Download size={18} />
                                                     </button>
+                                                    <button
+                                                        className="admin-action-btn admin-action-btn--delete"
+                                                        onClick={() => handleDelete(doc)}
+                                                        title="Supprimer"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -252,8 +301,8 @@ const UserDocuments = () => {
                     />
                 )}
             </div>
-        </UserLayout>
+        </SuperAdminLayout>
     );
 };
 
-export default UserDocuments;
+export default SuperAdminDocuments;

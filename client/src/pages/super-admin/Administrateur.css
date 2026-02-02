@@ -326,3 +326,17 @@
     color: var(--color-text-secondary);
     margin-top: var(--spacing-lg);
 }
+
+
+/* File name display */
+.file-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-primary);
+}
+
+.file-name svg {
+    color: var(--color-primary);
+    flex-shrink: 0;
+}

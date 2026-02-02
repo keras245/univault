@@ -6,6 +6,7 @@ import {
     UserCog,
     Settings,
     FileText,
+    GraduationCap,
     ChevronLeft,
     ChevronRight,
     LogOut
@@ -41,9 +42,14 @@ const Sidebar = () => {
             label: 'Gestion',
         },
         {
-            path: '/document',
+            path: '/super-admin/students',
+            icon: GraduationCap,
+            label: 'Étudiants',
+        },
+        {
+            path: '/super-admin/documents',
             icon: FileText,
-            label: 'Document',
+            label: 'Documents',
         }
     ];
 
