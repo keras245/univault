@@ -128,7 +128,7 @@ export const createStudent = async (req, res) => {
             matricule,
             firstName,
             lastName,
-            service: req.user.service,
+            service: 'Scolarité',
             createdBy: req.user._id
         });
 
@@ -345,7 +345,7 @@ export const importStudents = async (req, res) => {
                     matricule: cleanMatricule,
                     firstName: cleanFirstName,
                     lastName: cleanLastName,
-                    service: req.user.service,
+                    service: 'Scolarité',
                     createdBy: req.user._id
                 });
 
