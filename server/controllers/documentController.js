@@ -68,6 +68,7 @@ export const uploadDocument = async (req, res) => {
             fileType: cloudinaryResult.format,
             fileSize: cloudinaryResult.size,
             cloudinaryId: cloudinaryResult.publicId,
+            resourceType: cloudinaryResult.resourceType,
             metadata: parsedMetadata,
             tags: parsedTags,
             status: status || 'draft',

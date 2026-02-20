@@ -43,6 +43,10 @@ const documentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    resourceType: {
+        type: String,
+        default: 'image'
+    },
     // Métadonnées spécifiques par service
     metadata: {
         // Scolarité
