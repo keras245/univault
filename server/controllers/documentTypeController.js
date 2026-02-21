@@ -1,223 +1,101 @@
 import DocumentType from '../models/DocumentType.js';
-import Service from '../models/Service.js';
 
-// Créer un type de document
 export const createDocumentType = async (req, res) => {
     try {
-        const { name, service } = req.body;
+        const { name } = req.body;
+        const service = req.user.role === 'super-admin' ? req.body.service : req.user.service;
 
-        // Vérifier que le service existe
-        const serviceExists = await Service.findById(service);
-        if (!serviceExists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Service non trouvé'
-            });
+        if (!name || !service) {
+            return res.status(400).json({ success: false, message: 'Nom et service requis' });
         }
 
-        // Vérifier si le type existe déjà pour ce service
-        const existingType = await DocumentType.findOne({ name, service });
-        if (existingType) {
+        const existing = await DocumentType.findOne({ name: name.trim(), service });
+        if (existing) {
             return res.status(400).json({
                 success: false,
-                message: 'Ce type de document existe déjà pour ce service'
+                message: 'Ce type existe déjà pour ce service'
             });
         }
 
-        const documentType = await DocumentType.create({
-            name,
-            service
-        });
+        const documentType = await DocumentType.create({ name: name.trim(), service });
 
-        await documentType.populate('service', 'name code');
-
-        res.status(201).json({
-            success: true,
-            message: 'Type de document créé avec succès',
-            data: documentType
-        });
+        res.status(201).json({ success: true, data: documentType });
     } catch (error) {
-        console.error('Erreur création type de document:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la création du type de document'
-        });
+        console.error('Erreur création type:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Obtenir tous les types de documents
 export const getAllDocumentTypes = async (req, res) => {
     try {
-        const { service, search } = req.query;
-        const query = { isActive: true };
+        const { search } = req.query;
+        const filter = { isActive: true };
 
-        // Filtrer par service si fourni
-        if (service) {
-            query.service = service;
+        // Admin voit uniquement son service, super-admin voit tout
+        if (req.user.role !== 'super-admin') {
+            filter.service = req.user.service;
         }
 
-        // Recherche par nom
         if (search) {
-            query.name = { $regex: search, $options: 'i' };
+            filter.name = { $regex: search, $options: 'i' };
         }
 
-        const documentTypes = await DocumentType.find(query)
-            .populate('service', 'name code')
-            .sort({ name: 1 });
+        const types = await DocumentType.find(filter).sort({ service: 1, name: 1 });
 
-        res.json({
-            success: true,
-            data: documentTypes,
-            count: documentTypes.length
-        });
+        res.json({ success: true, data: types, count: types.length });
     } catch (error) {
-        console.error('Erreur récupération types de documents:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération des types de documents'
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Obtenir un type de document par ID
 export const getDocumentTypeById = async (req, res) => {
     try {
-        const documentType = await DocumentType.findById(req.params.id)
-            .populate('service', 'name code');
+        const type = await DocumentType.findById(req.params.id);
+        if (!type) return res.status(404).json({ success: false, message: 'Type non trouvé' });
 
-        if (!documentType) {
-            return res.status(404).json({
-                success: false,
-                message: 'Type de document non trouvé'
-            });
-        }
-
-        res.json({
-            success: true,
-            data: documentType
-        });
+        res.json({ success: true, data: type });
     } catch (error) {
-        console.error('Erreur récupération type de document:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération du type de document'
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Mettre à jour un type de document
 export const updateDocumentType = async (req, res) => {
     try {
-        const { name, service } = req.body;
+        const type = await DocumentType.findById(req.params.id);
+        if (!type) return res.status(404).json({ success: false, message: 'Type non trouvé' });
 
-        // Vérifier que le service existe si fourni
-        if (service) {
-            const serviceExists = await Service.findById(service);
-            if (!serviceExists) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Service non trouvé'
-                });
-            }
+        // Admin ne peut modifier que les types de son service
+        if (req.user.role !== 'super-admin' && type.service !== req.user.service) {
+            return res.status(403).json({ success: false, message: 'Accès refusé' });
         }
 
-        const documentType = await DocumentType.findByIdAndUpdate(
-            req.params.id,
-            { name, service },
-            { new: true, runValidators: true }
-        ).populate('service', 'name code');
+        const { name, isActive } = req.body;
+        if (name) type.name = name.trim();
+        if (isActive !== undefined) type.isActive = isActive;
 
-        if (!documentType) {
-            return res.status(404).json({
-                success: false,
-                message: 'Type de document non trouvé'
-            });
-        }
+        await type.save();
 
-        res.json({
-            success: true,
-            message: 'Type de document mis à jour avec succès',
-            data: documentType
-        });
+        res.json({ success: true, data: type });
     } catch (error) {
-        console.error('Erreur mise à jour type de document:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la mise à jour du type de document'
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// Supprimer un type de document (soft delete)
 export const deleteDocumentType = async (req, res) => {
     try {
-        const documentType = await DocumentType.findByIdAndUpdate(
-            req.params.id,
-            { isActive: false },
-            { new: true }
-        );
+        const type = await DocumentType.findById(req.params.id);
+        if (!type) return res.status(404).json({ success: false, message: 'Type non trouvé' });
 
-        if (!documentType) {
-            return res.status(404).json({
-                success: false,
-                message: 'Type de document non trouvé'
-            });
+        if (req.user.role !== 'super-admin' && type.service !== req.user.service) {
+            return res.status(403).json({ success: false, message: 'Accès refusé' });
         }
 
-        res.json({
-            success: true,
-            message: 'Type de document supprimé avec succès'
-        });
-    } catch (error) {
-        console.error('Erreur suppression type de document:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la suppression du type de document'
-        });
-    }
-};
+        // Soft delete
+        type.isActive = false;
+        await type.save();
 
-// Obtenir les statistiques des types de documents
-export const getDocumentTypeStats = async (req, res) => {
-    try {
-        const total = await DocumentType.countDocuments({ isActive: true });
-        const byService = await DocumentType.aggregate([
-            { $match: { isActive: true } },
-            {
-                $group: {
-                    _id: '$service',
-                    count: { $sum: 1 }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'services',
-                    localField: '_id',
-                    foreignField: '_id',
-                    as: 'service'
-                }
-            },
-            { $unwind: '$service' },
-            {
-                $project: {
-                    serviceName: '$service.name',
-                    count: 1
-                }
-            }
-        ]);
-
-        res.json({
-            success: true,
-            data: {
-                total,
-                byService
-            }
-        });
+        res.json({ success: true, message: 'Type supprimé avec succès' });
     } catch (error) {
-        console.error('Erreur statistiques types de documents:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération des statistiques'
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };

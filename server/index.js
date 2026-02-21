@@ -17,6 +17,7 @@ import letterRoutes from './routes/letters.js';
 import searchRoutes from './routes/search.js';
 import userRoutes from './routes/users.js';
 import serviceRoutes from './routes/services.js';
+import documentTypeRoutes from './routes/documentTypes.js';
 
 // Initialisation de l'application
 const app = express();
@@ -66,6 +67,7 @@ app.use('/api/letters', letterRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/document-types', documentTypeRoutes);
 
 // Route de test
 app.get('/', (req, res) => {

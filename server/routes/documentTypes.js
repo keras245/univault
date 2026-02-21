@@ -4,25 +4,23 @@ import {
     getAllDocumentTypes,
     getDocumentTypeById,
     updateDocumentType,
-    deleteDocumentType,
-    getDocumentTypeStats
+    deleteDocumentType
 } from '../controllers/documentTypeController.js';
-import { protect } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js'; 
 import { authorize } from '../middleware/authorize.js';
 
 const router = express.Router();
 
 // Toutes les routes nécessitent une authentification
-router.use(protect);
+router.use(authenticate);
 
 // Routes publiques (tous les utilisateurs authentifiés)
 router.get('/', getAllDocumentTypes);
-router.get('/stats', getDocumentTypeStats);
 router.get('/:id', getDocumentTypeById);
 
 // Routes admin uniquement
-router.post('/', authorize(['admin', 'super-admin']), createDocumentType);
-router.put('/:id', authorize(['admin', 'super-admin']), updateDocumentType);
-router.delete('/:id', authorize(['admin', 'super-admin']), deleteDocumentType);
+router.post('/', authorize('admin', 'super-admin'), createDocumentType);
+router.put('/:id', authorize('admin', 'super-admin'), updateDocumentType);
+router.delete('/:id', authorize('admin', 'super-admin'), deleteDocumentType);
 
 export default router;

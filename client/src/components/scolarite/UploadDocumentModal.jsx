@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, FileText, File, Search, User } from 'lucide-react';
 import { studentDocumentsAPI, studentsAPI } from '../../config/api';
@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import '../../components/super-admin/AdminModal.css';
 import './UploadDocumentModal.css';
+import { documentTypesAPI } from '../../config/api';
 
 const UploadDocumentModal = ({ isOpen, onClose, studentId, onSuccess, showSearch = false }) => {
     const [loading, setLoading] = useState(false);
@@ -19,16 +20,23 @@ const UploadDocumentModal = ({ isOpen, onClose, studentId, onSuccess, showSearch
     const [student, setStudent] = useState(null);
     const [searching, setSearching] = useState(false);
 
-    const documentTypes = [
-        'Fiche d\'inscription',
-        'Fiche de réinscription',
-        'Diplôme du bac',
-        'Extrait de naissance',
-        'Photo d\'identité',
-        'Certificat de scolarité',
-        'Attestation',
-        'Autre'
-    ];
+    const [documentTypes, setDocumentTypes] = useState([]);
+
+    useEffect(() => {
+        const fetchTypes = async () => {
+            try {
+                const response = await documentTypesAPI.getAll();
+                const types = response.data.data || [];
+                setDocumentTypes(types.map(t => t.name));
+                if (types.length > 0) {
+                    setFormData(prev => ({ ...prev, type: types[0].name }));
+                }
+            } catch (error) {
+                console.error('Erreur chargement types:', error);
+            }
+        };
+        fetchTypes();
+    }, []);
 
     const handleSearchStudent = async () => {
         if (!matricule.trim()) {

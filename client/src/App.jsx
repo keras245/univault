@@ -17,6 +17,7 @@ import SuperAdminDocuments from './pages/super-admin/Documents';
 // Admin Pages (Chefs de service)
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminDocuments from './pages/admin/Documents';
+import AdminDocumentTypes from './pages/admin/DocumentTypes';
 import AdminTeam from './pages/admin/Team';
 
 // User Pages
@@ -184,6 +185,14 @@ function App() {
                 <AdminDocuments />
               </ProtectedRoute>
             }
+          />
+          <Route
+              path="/admin/document-types"
+              element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminDocumentTypes />
+                  </ProtectedRoute>
+              }
           />
           <Route
             path="/admin/team"

@@ -7,7 +7,7 @@ const documentTypeSchema = new mongoose.Schema({
         trim: true
     },
     service: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: 'Service',
         required: [true, 'Le service est requis']
     },
@@ -19,8 +19,7 @@ const documentTypeSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index pour recherche rapide
-documentTypeSchema.index({ name: 1, service: 1 });
+documentTypeSchema.index({ name: 1, service: 1 }, { unique: true });
 
 const DocumentType = mongoose.model('DocumentType', documentTypeSchema);
 

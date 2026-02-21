@@ -6,6 +6,7 @@ import {
     FileText,
     Users,
     GraduationCap,
+    Tags,
     ChevronLeft,
     ChevronRight,
     LogOut
@@ -39,6 +40,11 @@ const AdminSidebar = () => {
             path: '/admin/documents',
             icon: FileText,
             label: 'Documents',
+        },
+        {
+            path: '/admin/document-types',
+            icon: Tags,
+            label: 'Types de documents',
         },
         {
             path: '/admin/team',

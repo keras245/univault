@@ -140,6 +140,13 @@ export const studentsAPI = {
     getAllDocuments: (params) => api.get('/students/all-documents', { params }),
 };
 
+export const documentTypesAPI = {
+    getAll: (params) => api.get('/document-types', { params }),
+    create: (data) => api.post('/document-types', data),
+    update: (id, data) => api.put(`/document-types/${id}`, data),
+    delete: (id) => api.delete(`/document-types/${id}`),
+};
+
 // Student Documents
 export const studentDocumentsAPI = {
     getByStudent: (studentId) => api.get(`/students/${studentId}/documents`),

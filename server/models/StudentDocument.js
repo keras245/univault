@@ -10,16 +10,7 @@ const studentDocumentSchema = new mongoose.Schema({
     type: {
         type: String,
         required: [true, 'Le type de document est requis'],
-        enum: [
-            'Fiche d\'inscription',
-            'Fiche de réinscription',
-            'Diplôme du bac',
-            'Extrait de naissance',
-            'Photo d\'identité',
-            'Certificat de scolarité',
-            'Attestation',
-            'Autre'
-        ]
+        trim: true,
     },
     fileName: {
         type: String,
