@@ -106,6 +106,60 @@ export const getStudentById = async (req, res) => {
     }
 };
 
+export const getAllStudentsDocuments = async (req, res) => {
+    try {
+        const { search, page = 1, limit = 20 } = req.query;
+
+        const filter = {};
+        if (req.user.role !== 'super-admin') {
+            filter.service = req.user.service;
+        }
+
+        if (search) {
+            filter.$or = [
+                { matricule: { $regex: search, $options: 'i'}},
+                { firstName: { $regex: search, $options: 'i'}},
+                { lastName: { $regex: search, $options: 'i'}}
+            ];
+        }
+
+        const students = await Student.find(filter, '_id');
+        const studentIds = students.map(s => s._id);
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [documents, total] = await Promise.all([
+            StudentDocument.find({ student: { $in: studentIds } }).
+            populate('student', 'matricule firstName lastName service')
+            .populate('uploadedBy', 'firstName lastName')
+            .sort({ uploadedAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit)),
+            StudentDocument.countDocuments({ student: { $in: studentIds } })
+        ]);
+
+
+        res.json({
+            success: true,
+            data: documents,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération de tous les étudiants : ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des documents : ',
+            error: error.message
+        });
+    }
+};
+
 /**
  * @route   POST /api/students
  * @desc    Créer un nouvel étudiant
@@ -443,3 +497,5 @@ export const getStudentStats = async (req, res) => {
         });
     }
 };
+
+

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Search, Download, Eye, Plus } from 'lucide-react';
+import { FileText, Search, Download, Eye, Plus, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import UserLayout from '../../components/layout/user/UserLayout';
 import { studentDocumentsAPI, studentsAPI } from '../../config/api';
 import useAuthStore from '../../store/authStore';
@@ -16,6 +16,8 @@ const UserDocuments = () => {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [stats, setStats] = useState({ total: 0 });
+    const [currentPage, setCurrentPage] = useState(1);  
+    const [totalPages, setTotalPages] = useState(1);     
 
     // Debounce de la recherche
     useEffect(() => {
@@ -26,53 +28,30 @@ const UserDocuments = () => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    useEffect(() => {
-        fetchAllDocuments();
-    }, [debouncedSearch]);
 
-    const fetchAllDocuments = async () => {
-        try {
-            setLoading(true);
-            
-            // Les étudiants sont automatiquement filtrés par service côté backend
-            const studentsResponse = await studentsAPI.getAll({ search: debouncedSearch });
-            const students = studentsResponse.data.data || [];
-            
-            console.log('📊 Étudiants du service', user.service, ':', students.length);
-            
-            const allDocs = [];
-            for (const student of students) {
-                try {
-                    const docsResponse = await studentDocumentsAPI.getByStudent(student._id);
-                    const studentDocs = docsResponse.data.data || [];
-                    studentDocs.forEach(doc => {
-                        allDocs.push({
-                            ...doc,
-                            student: {
-                                _id: student._id,
-                                matricule: student.matricule,
-                                firstName: student.firstName,
-                                lastName: student.lastName,
-                                service: student.service
-                            }
-                        });
-                    });
-                } catch (err) {
-                    console.error('Erreur docs étudiant:', student.matricule, err);
-                }
-            }
-            
-            console.log('📄 Documents du service:', allDocs.length);
-            
-            setDocuments(allDocs);
-            setStats({ total: allDocs.length });
-        } catch (error) {
-            console.error('Erreur:', error);
-            toast.error('Erreur lors du chargement des documents');
-        } finally {
-            setLoading(false);
+    const fetchAllDocuments = async (page = 1) => {
+    try {
+        setLoading(true);
+        const response = await studentsAPI.getAllDocuments({ 
+            search: debouncedSearch,
+            page,
+            limit: 20
+        });
+        setDocuments(response.data.data || []);
+        setTotalPages(response.data.pagination.pages);
+        setStats({ total: response.data.pagination.total });
+    } catch (error) {
+        console.error('Erreur:', error);
+        toast.error('Erreur lors du chargement des documents');
+    } finally {
+        setLoading(false);
         }
     };
+
+    useEffect(() => {
+        setCurrentPage(1);
+        fetchAllDocuments(1);
+    }, [debouncedSearch]);
 
     const handlePreview = (doc) => {
         window.open(doc.signedUrl || doc.fileUrl, '_blank');
@@ -183,7 +162,6 @@ const UserDocuments = () => {
                                         <th>Matricule</th>
                                         <th>Étudiant</th>
                                         <th>Type</th>
-                                        <th>Fichier</th>
                                         <th>Taille</th>
                                         <th>Date</th>
                                         <th>Actions</th>
@@ -206,12 +184,6 @@ const UserDocuments = () => {
                                                 </div>
                                             </td>
                                             <td>{doc.type}</td>
-                                            <td>
-                                                <div className="file-name">
-                                                    <FileText size={16} />
-                                                    {doc.fileName}
-                                                </div>
-                                            </td>
                                             <td>{formatFileSize(doc.fileSize)}</td>
                                             <td>{formatDate(doc.uploadedAt)}</td>
                                             <td>
@@ -236,6 +208,46 @@ const UserDocuments = () => {
                                     ))}
                                 </tbody>
                             </table>
+
+                            {totalPages > 1 && (
+                                <div className="admin-pagination">
+                                    <button
+                                        onClick={() => { setCurrentPage(1); fetchAllDocuments(1); }}
+                                        disabled={currentPage === 1}
+                                        className="admin-pagination-btn"
+                                        title="Première page"
+                                    >
+                                        <ChevronsLeft size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => { setCurrentPage(p => p - 1); fetchAllDocuments(currentPage - 1); }}
+                                        disabled={currentPage === 1}
+                                        className="admin-pagination-btn"
+                                        title="Page précédente"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    <span className="admin-pagination-info">{currentPage} / {totalPages}</span>
+                                    <button
+                                        onClick={() => { setCurrentPage(p => p + 1); fetchAllDocuments(currentPage + 1); }}
+                                        disabled={currentPage === totalPages}
+                                        className="admin-pagination-btn"
+                                        title="Page suivante"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => { setCurrentPage(totalPages); fetchAllDocuments(totalPages); }}
+                                        disabled={currentPage === totalPages}
+                                        className="admin-pagination-btn"
+                                        title="Dernière page"
+                                    >
+                                        <ChevronsRight size={16} />
+                                    </button>
+                                </div>
+                            )}
+
+
                         </div>
                     )}
                 </motion.div>

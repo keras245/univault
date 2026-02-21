@@ -28,7 +28,7 @@ const upload = multer({
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Format de fichier non autorisé. Seulement PDF, JPG, PNG acceptés.'));
+            cb(new Error('Format de fichier non autorisé. Seulement les PDF, JPG, PNG sont acceptés.'));
         }
     }
 });
@@ -61,6 +61,7 @@ router.use(authenticate);
 // Routes étudiants
 router.get('/', studentController.getStudents);
 router.get('/stats', studentController.getStudentStats);
+router.get('/all-documents', studentController.getAllStudentsDocuments);
 router.get('/:id', studentController.getStudentById);
 
 // Routes admin uniquement (admin du service Scolarité)

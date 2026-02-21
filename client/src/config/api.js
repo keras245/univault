@@ -85,6 +85,7 @@ export const documentsAPI = {
     }),
 };
 
+
 // Courriers RH
 export const lettersAPI = {
     create: (data) => api.post('/letters', data),
@@ -135,6 +136,8 @@ export const studentsAPI = {
     importExcel: (formData) => api.post('/students/import/excel', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
+
+    getAllDocuments: (params) => api.get('/students/all-documents', { params }),
 };
 
 // Student Documents

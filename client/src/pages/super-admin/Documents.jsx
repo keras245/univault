@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Plus, Search, Download, Eye, Trash2, Upload as UploadIcon } from 'lucide-react';
+import { FileText, Plus, Search, Download, Eye, Trash2, Upload as UploadIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
 import { studentDocumentsAPI, studentsAPI } from '../../config/api';
 import toast from 'react-hot-toast';
@@ -14,6 +14,8 @@ const SuperAdminDocuments = () => {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [stats, setStats] = useState({ total: 0, byType: {} });
+    const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(1);
 
     // Debounce de la recherche (attend 500ms après la dernière frappe)
     useEffect(() => {
@@ -24,54 +26,25 @@ const SuperAdminDocuments = () => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    useEffect(() => {
-        fetchAllDocuments();
-    }, [debouncedSearch]);
-
-    const fetchAllDocuments = async () => {
+    const fetchAllDocuments = async (page = 1) => {
         try {
             setLoading(true);
+            const response = await studentsAPI.getAllDocuments({ 
+                search: debouncedSearch,
+                page,
+                limit: 20
+            });
+            const docs = response.data.data || [];
             
-            // Récupérer les étudiants (filtrage automatique par service côté backend)
-            const studentsResponse = await studentsAPI.getAll({ search: debouncedSearch });
-            const students = studentsResponse.data.data || [];
-            
-            console.log('📊 Étudiants récupérés:', students.length);
-            
-            // Récupérer tous les documents de tous les étudiants
-            const allDocs = [];
-            for (const student of students) {
-                try {
-                    const docsResponse = await studentDocumentsAPI.getByStudent(student._id);
-                    const studentDocs = docsResponse.data.data || [];
-                    studentDocs.forEach(doc => {
-                        allDocs.push({
-                            ...doc,
-                            student: {
-                                _id: student._id,
-                                matricule: student.matricule,
-                                firstName: student.firstName,
-                                lastName: student.lastName,
-                                service: student.service
-                            }
-                        });
-                    });
-                } catch (err) {
-                    console.error('Erreur docs étudiant:', student.matricule, err);
-                }
-            }
-            
-            console.log('📄 Documents récupérés:', allDocs.length);
-            
-            setDocuments(allDocs);
-            
-            // Calculer les stats
-            const total = allDocs.length;
+            // Recalculer byType
             const byType = {};
-            allDocs.forEach(doc => {
+            docs.forEach(doc => {
                 byType[doc.type] = (byType[doc.type] || 0) + 1;
             });
-            setStats({ total, byType });
+
+            setDocuments(docs);
+            setTotalPages(response.data.pagination.pages);
+            setStats({ total: response.data.pagination.total, byType }); // 👈
         } catch (error) {
             console.error('Erreur:', error);
             toast.error('Erreur lors du chargement des documents');
@@ -79,6 +52,12 @@ const SuperAdminDocuments = () => {
             setLoading(false);
         }
     };
+
+    // Réinitialiser la page quand la recherche change
+    useEffect(() => {
+        setCurrentPage(1);
+        fetchAllDocuments(1);
+    }, [debouncedSearch]);
 
     const handleDelete = async (doc) => {
         if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) return;
@@ -225,7 +204,6 @@ const SuperAdminDocuments = () => {
                                         <th>Matricule</th>
                                         <th>Étudiant</th>
                                         <th>Type</th>
-                                        <th>Fichier</th>
                                         <th>Taille</th>
                                         <th>Date</th>
                                         <th>Actions</th>
@@ -248,12 +226,6 @@ const SuperAdminDocuments = () => {
                                                 </div>
                                             </td>
                                             <td>{doc.type}</td>
-                                            <td>
-                                                <div className="file-name">
-                                                    <FileText size={16} />
-                                                    {doc.fileName}
-                                                </div>
-                                            </td>
                                             <td>{formatFileSize(doc.fileSize)}</td>
                                             <td>{formatDate(doc.uploadedAt)}</td>
                                             <td>
@@ -285,6 +257,46 @@ const SuperAdminDocuments = () => {
                                     ))}
                                 </tbody>
                             </table>
+
+                            {totalPages > 1 && (
+                            <div className="admin-pagination">
+                                <button
+                                    onClick={() => { setCurrentPage(1); fetchAllDocuments(1); }}
+                                    disabled={currentPage === 1}
+                                    className="admin-pagination-btn"
+                                    title="Première page"
+                                >
+                                    <ChevronsLeft size={16} />
+                                </button>
+                                <button
+                                    onClick={() => { setCurrentPage(p => p - 1); fetchAllDocuments(currentPage - 1); }}
+                                    disabled={currentPage === 1}
+                                    className="admin-pagination-btn"
+                                    title="Page précédente"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <span className="admin-pagination-info">{currentPage} / {totalPages}</span>
+                                <button
+                                    onClick={() => { setCurrentPage(p => p + 1); fetchAllDocuments(currentPage + 1); }}
+                                    disabled={currentPage === totalPages}
+                                    className="admin-pagination-btn"
+                                    title="Page suivante"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                                <button
+                                    onClick={() => { setCurrentPage(totalPages); fetchAllDocuments(totalPages); }}
+                                    disabled={currentPage === totalPages}
+                                    className="admin-pagination-btn"
+                                    title="Dernière page"
+                                >
+                                    <ChevronsRight size={16} />
+                                </button>
+                            </div>
+                        )}
+
+
                         </div>
                     )}
                 </motion.div>
