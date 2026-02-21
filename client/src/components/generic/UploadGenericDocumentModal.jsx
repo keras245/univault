@@ -83,7 +83,11 @@ const UploadGenericDocumentModal = ({ isOpen, onClose, onSuccess }) => {
             onSuccess();
         } catch (error) {
             console.error('Erreur:', error);
-            toast.error(error.message || 'Erreur lors de l\'upload');
+            if (error.code === 'ERR_CONNECTION_REFUSED' || error.message?.includes('timeout')) {
+                toast.error('Fichier trop volumineux ou connexion trop lente. Réessayez avec un fichier plus léger.');
+            } else {
+                toast.error(error.message || 'Erreur lors de l\'upload');
+            }
         } finally {
             setLoading(false);
         }

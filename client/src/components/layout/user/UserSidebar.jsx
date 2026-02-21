@@ -25,17 +25,19 @@ const UserSidebar = () => {
         navigate('/login');
     };
 
-    const menuItems = [
+    const isScolarite = user?.service === 'Scolarité';
+
+        const menuItems = [
         {
             path: '/user/dashboard',
             icon: LayoutDashboard,
             label: 'Tableau de bord',
         },
-        {
+        ...(isScolarite ? [{
             path: '/user/students',
             icon: GraduationCap,
             label: 'Étudiants',
-        },
+        }] : []),
         {
             path: '/user/documents',
             icon: FileText,

@@ -2,56 +2,61 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Search, Download, Eye, Plus, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import UserLayout from '../../components/layout/user/UserLayout';
-import { studentDocumentsAPI, studentsAPI } from '../../config/api';
+import { studentDocumentsAPI, studentsAPI, documentsAPI } from '../../config/api';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
 import UploadDocumentModal from '../../components/scolarite/UploadDocumentModal';
+import UploadGenericDocumentModal from '../../components/generic/UploadGenericDocumentModal';
 import '../super-admin/Administrateur.css';
 
 const UserDocuments = () => {
     const { user } = useAuthStore();
+    const isScolarite = user?.service === 'Scolarité';
+
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [stats, setStats] = useState({ total: 0 });
-    const [currentPage, setCurrentPage] = useState(1);  
-    const [totalPages, setTotalPages] = useState(1);     
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
-    // Debounce de la recherche
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchTerm);
-        }, 500);
-
+        const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-
-    const fetchAllDocuments = async (page = 1) => {
-    try {
-        setLoading(true);
-        const response = await studentsAPI.getAllDocuments({ 
-            search: debouncedSearch,
-            page,
-            limit: 20
-        });
-        setDocuments(response.data.data || []);
-        setTotalPages(response.data.pagination.pages);
-        setStats({ total: response.data.pagination.total });
-    } catch (error) {
-        console.error('Erreur:', error);
-        toast.error('Erreur lors du chargement des documents');
-    } finally {
-        setLoading(false);
-        }
-    };
-
     useEffect(() => {
         setCurrentPage(1);
-        fetchAllDocuments(1);
+        fetchDocuments(1);
     }, [debouncedSearch]);
+
+    const fetchDocuments = async (page = 1) => {
+        try {
+            setLoading(true);
+            if (isScolarite) {
+                const response = await studentsAPI.getAllDocuments({
+                    search: debouncedSearch, page, limit: 20
+                });
+                setDocuments(response.data.data || []);
+                setTotalPages(response.data.pagination.pages);
+                setStats({ total: response.data.pagination.total });
+            } else {
+                const response = await documentsAPI.getAll({
+                    search: debouncedSearch, page, limit: 20
+                });
+                setDocuments(response.data.data?.documents || []);
+                setTotalPages(response.data.data?.pagination?.pages || 1);
+                setStats({ total: response.data.data?.pagination?.total || 0 });
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            toast.error('Erreur lors du chargement des documents');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handlePreview = (doc) => {
         window.open(doc.signedUrl || doc.fileUrl, '_blank');
@@ -60,7 +65,7 @@ const UserDocuments = () => {
     const handleDownload = (doc) => {
         const link = document.createElement('a');
         link.href = doc.signedUrl || doc.fileUrl;
-        link.download = doc.fileName;
+        link.download = doc.fileName || doc.title;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
@@ -69,7 +74,7 @@ const UserDocuments = () => {
     };
 
     const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
+        if (!bytes) return '-';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -78,9 +83,7 @@ const UserDocuments = () => {
 
     const formatDate = (date) => {
         return new Date(date).toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
+            day: '2-digit', month: 'long', year: 'numeric'
         });
     };
 
@@ -94,11 +97,11 @@ const UserDocuments = () => {
                 >
                     <div className="admin-header-top">
                         <div>
-                            <h1 className="admin-header-title">
-                                Documents Étudiants
-                            </h1>
+                            <h1 className="admin-header-title">Documents</h1>
                             <p className="admin-header-subtitle">
-                                Consultez et ajoutez des documents des étudiants
+                                {isScolarite
+                                    ? 'Consultez et ajoutez des documents des étudiants'
+                                    : `Documents du service ${user?.service}`}
                             </p>
                         </div>
                         <button className="btn-primary" onClick={() => setShowUploadModal(true)}>
@@ -111,7 +114,7 @@ const UserDocuments = () => {
                         <Search className="admin-search-icon" size={20} />
                         <input
                             type="text"
-                            placeholder="Rechercher par matricule ou nom..."
+                            placeholder={isScolarite ? 'Rechercher par matricule ou nom...' : 'Rechercher un document...'}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="admin-search-input"
@@ -120,11 +123,7 @@ const UserDocuments = () => {
                 </motion.div>
 
                 <div className="admin-stats">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="admin-stat-card"
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="admin-stat-card">
                         <div className="admin-stat-content">
                             <div>
                                 <p className="admin-stat-label">Documents disponibles</p>
@@ -159,8 +158,14 @@ const UserDocuments = () => {
                             <table className="admin-table">
                                 <thead className="admin-table-header">
                                     <tr>
-                                        <th>Matricule</th>
-                                        <th>Étudiant</th>
+                                        {isScolarite ? (
+                                            <>
+                                                <th>Matricule</th>
+                                                <th>Étudiant</th>
+                                            </>
+                                        ) : (
+                                            <th>Titre</th>
+                                        )}
                                         <th>Type</th>
                                         <th>Taille</th>
                                         <th>Date</th>
@@ -170,36 +175,39 @@ const UserDocuments = () => {
                                 <tbody className="admin-table-body">
                                     {documents.map((doc) => (
                                         <tr key={doc._id}>
-                                            <td>
-                                                <span className="admin-badge admin-badge--admin">{doc.student.matricule}</span>
-                                            </td>
-                                            <td>
-                                                <div className="admin-table-user">
-                                                    <div className="admin-table-avatar">
-                                                        {doc.student.firstName.charAt(0)}{doc.student.lastName.charAt(0)}
+                                            {isScolarite ? (
+                                                <>
+                                                    <td>
+                                                        <span className="admin-badge admin-badge--admin">{doc.student?.matricule}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin-table-user">
+                                                            <div className="admin-table-avatar">
+                                                                {doc.student?.firstName?.charAt(0)}{doc.student?.lastName?.charAt(0)}
+                                                            </div>
+                                                            <p className="admin-table-user-name">{doc.student?.firstName} {doc.student?.lastName}</p>
+                                                        </div>
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                <td>
+                                                    <div className="admin-table-user">
+                                                        <div className="admin-stat-icon admin-stat-icon--blue" style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem' }}>
+                                                            <FileText size={16} />
+                                                        </div>
+                                                        <p className="admin-table-user-name">{doc.title}</p>
                                                     </div>
-                                                    <div className="admin-table-user-info">
-                                                        <p className="admin-table-user-name">{doc.student.firstName} {doc.student.lastName}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>{doc.type}</td>
+                                                </td>
+                                            )}
+                                            <td>{isScolarite ? doc.type : doc.category}</td>
                                             <td>{formatFileSize(doc.fileSize)}</td>
-                                            <td>{formatDate(doc.uploadedAt)}</td>
+                                            <td>{formatDate(isScolarite ? doc.uploadedAt : doc.createdAt)}</td>
                                             <td>
                                                 <div className="admin-table-actions">
-                                                    <button
-                                                        className="admin-action-btn admin-action-btn--view"
-                                                        onClick={() => handlePreview(doc)}
-                                                        title="Prévisualiser"
-                                                    >
+                                                    <button className="admin-action-btn admin-action-btn--view" onClick={() => handlePreview(doc)} title="Prévisualiser">
                                                         <Eye size={18} />
                                                     </button>
-                                                    <button
-                                                        className="admin-action-btn admin-action-btn--edit"
-                                                        onClick={() => handleDownload(doc)}
-                                                        title="Télécharger"
-                                                    >
+                                                    <button className="admin-action-btn admin-action-btn--edit" onClick={() => handleDownload(doc)} title="Télécharger">
                                                         <Download size={18} />
                                                     </button>
                                                 </div>
@@ -211,56 +219,30 @@ const UserDocuments = () => {
 
                             {totalPages > 1 && (
                                 <div className="admin-pagination">
-                                    <button
-                                        onClick={() => { setCurrentPage(1); fetchAllDocuments(1); }}
-                                        disabled={currentPage === 1}
-                                        className="admin-pagination-btn"
-                                        title="Première page"
-                                    >
-                                        <ChevronsLeft size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => { setCurrentPage(p => p - 1); fetchAllDocuments(currentPage - 1); }}
-                                        disabled={currentPage === 1}
-                                        className="admin-pagination-btn"
-                                        title="Page précédente"
-                                    >
-                                        <ChevronLeft size={16} />
-                                    </button>
+                                    <button onClick={() => { setCurrentPage(1); fetchDocuments(1); }} disabled={currentPage === 1} className="admin-pagination-btn" title="Première page"><ChevronsLeft size={16} /></button>
+                                    <button onClick={() => { setCurrentPage(p => p - 1); fetchDocuments(currentPage - 1); }} disabled={currentPage === 1} className="admin-pagination-btn" title="Précédent"><ChevronLeft size={16} /></button>
                                     <span className="admin-pagination-info">{currentPage} / {totalPages}</span>
-                                    <button
-                                        onClick={() => { setCurrentPage(p => p + 1); fetchAllDocuments(currentPage + 1); }}
-                                        disabled={currentPage === totalPages}
-                                        className="admin-pagination-btn"
-                                        title="Page suivante"
-                                    >
-                                        <ChevronRight size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => { setCurrentPage(totalPages); fetchAllDocuments(totalPages); }}
-                                        disabled={currentPage === totalPages}
-                                        className="admin-pagination-btn"
-                                        title="Dernière page"
-                                    >
-                                        <ChevronsRight size={16} />
-                                    </button>
+                                    <button onClick={() => { setCurrentPage(p => p + 1); fetchDocuments(currentPage + 1); }} disabled={currentPage === totalPages} className="admin-pagination-btn" title="Suivant"><ChevronRight size={16} /></button>
+                                    <button onClick={() => { setCurrentPage(totalPages); fetchDocuments(totalPages); }} disabled={currentPage === totalPages} className="admin-pagination-btn" title="Dernière page"><ChevronsRight size={16} /></button>
                                 </div>
                             )}
-
-
                         </div>
                     )}
                 </motion.div>
 
-                {showUploadModal && (
+                {/* Modal selon le service */}
+                {isScolarite ? (
                     <UploadDocumentModal
                         isOpen={showUploadModal}
                         onClose={() => setShowUploadModal(false)}
-                        onSuccess={() => {
-                            setShowUploadModal(false);
-                            fetchAllDocuments();
-                        }}
+                        onSuccess={() => { setShowUploadModal(false); fetchDocuments(); }}
                         showSearch={true}
+                    />
+                ) : (
+                    <UploadGenericDocumentModal
+                        isOpen={showUploadModal}
+                        onClose={() => setShowUploadModal(false)}
+                        onSuccess={() => { setShowUploadModal(false); fetchDocuments(); }}
                     />
                 )}
             </div>
