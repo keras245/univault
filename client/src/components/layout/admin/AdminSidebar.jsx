@@ -5,6 +5,7 @@ import {
     LayoutDashboard,
     FileText,
     Users,
+    UserCircle,
     GraduationCap,
     Tags,
     ChevronLeft,
@@ -52,6 +53,11 @@ const AdminSidebar = () => {
             path: '/admin/team',
             icon: Users,
             label: 'Mon Équipe',
+        },
+        {
+            path: '/admin/profile',
+            icon: UserCircle,
+            label: 'Mon Profil',
         }
     ];
 

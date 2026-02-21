@@ -6,6 +6,7 @@ import {
     UserCog,
     Settings,
     FileText,
+    UserCircle,
     GraduationCap,
     ChevronLeft,
     ChevronRight,
@@ -50,6 +51,11 @@ const Sidebar = () => {
             path: '/super-admin/documents',
             icon: FileText,
             label: 'Documents',
+        },
+        {
+            path: '/super-admin/profile',
+            icon: UserCircle,
+            label: 'Mon Profil',
         }
     ];
 

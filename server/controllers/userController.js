@@ -13,6 +13,8 @@ export const getUsers = async (req, res) => {
         // Construire le filtre
         const filter = {};
 
+        filter._id = { $ne: req.user._id }; 
+
         if (role) {
             // Gérer les tableaux de rôles (ex: role[]=admin&role[]=super-admin)
             if (Array.isArray(role)) {
@@ -223,6 +225,13 @@ export const deleteUser = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Vous ne pouvez pas supprimer votre propre compte.',
+            });
+        }
+
+        if (user.role === 'super-admin') {
+            return res.status(400).json({
+                success: false,
+                message: 'Impossible de supprimer un compte super-admin.',
             });
         }
 

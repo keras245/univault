@@ -51,6 +51,8 @@ const Administrateur = () => {
         admin.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+
+
     // Handlers CRUD
     const handleCreate = () => {
         setSelectedAdmin(null);
@@ -273,13 +275,15 @@ const Administrateur = () => {
                                                     >
                                                         <Edit2 size={18} />
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDelete(admin)}
-                                                        className="admin-action-btn admin-action-btn--delete"
-                                                        title="Supprimer"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                    {admin.role !== 'super-admin' && (
+                                                        <button
+                                                            onClick={() => handleDelete(admin)}
+                                                            className="admin-action-btn admin-action-btn--delete"
+                                                            title="Supprimer"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </motion.tr>

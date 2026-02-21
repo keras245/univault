@@ -13,12 +13,14 @@ import SuperAdminDashboard from './pages/super-admin/Dashboard';
 import Administrateur from './pages/super-admin/Administrateur';
 import Gestion from './pages/super-admin/Gestion';
 import SuperAdminDocuments from './pages/super-admin/Documents';
+import SuperAdminProfile from './pages/super-admin/Profile';
 
 // Admin Pages (Chefs de service)
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminDocuments from './pages/admin/Documents';
 import AdminDocumentTypes from './pages/admin/DocumentTypes';
 import AdminTeam from './pages/admin/Team';
+import AdminProfile from './pages/admin/Profile';
 
 // User Pages
 import UserDashboard from './pages/user/Dashboard';
@@ -152,6 +154,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route 
+          path="/super-admin/profile" 
+          element={
+              <ProtectedRoute allowedRoles={['super-admin']}>
+                  <SuperAdminProfile />
+              </ProtectedRoute>
+          }
+          />
 
           {/* ========== ADMIN ROUTES (Chefs de service) ========== */}
           <Route
@@ -201,6 +211,14 @@ function App() {
                 <AdminTeam />
               </ProtectedRoute>
             }
+          />
+          <Route
+          path="/admin/profile"
+          element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminProfile />
+              </ProtectedRoute>
+          }
           />
 
           {/* ========== USER ROUTES ========== */}
