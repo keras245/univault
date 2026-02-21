@@ -23,8 +23,8 @@ import AdminTeam from './pages/admin/Team';
 // User Pages
 import UserDashboard from './pages/user/Dashboard';
 import UserDocuments from './pages/user/Documents';
-import UserSearch from './pages/user/Search';
-import UserNotifications from './pages/user/Notifications';
+import UserActivity from './pages/user/Activity';
+import UserProfile from './pages/user/Profile';
 
 // Scolarité Pages (partagées Admin & User)
 import Students from './pages/scolarite/Students';
@@ -237,20 +237,20 @@ function App() {
             }
           />
           <Route
-            path="/user/search"
-            element={
+          path="/user/activity"
+          element={
               <ProtectedRoute allowedRoles={['user']}>
-                <UserSearch />
+                  <UserActivity />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/user/notifications"
-            element={
+          path="/user/profile"
+          element={
               <ProtectedRoute allowedRoles={['user']}>
-                <UserNotifications />
+                  <UserProfile />
               </ProtectedRoute>
-            }
+          }
           />
 
           {/* ========== DEFAULT REDIRECTS ========== */}

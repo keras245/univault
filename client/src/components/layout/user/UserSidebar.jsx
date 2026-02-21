@@ -4,13 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard,
     FileText,
-    Search,
-    Bell,
     GraduationCap,
+    UserCircle,
+    Activity,
     ChevronLeft,
     ChevronRight,
     LogOut
 } from 'lucide-react';
+
 import useAuthStore from '../../../store/authStore';
 import ThemeToggle from '../../ui/ThemeToggle';
 import './UserSidebar.css';
@@ -44,14 +45,14 @@ const UserSidebar = () => {
             label: 'Mes Documents',
         },
         {
-            path: '/user/search',
-            icon: Search,
-            label: 'Recherche',
+            path: '/user/activity',
+            icon: Activity,
+            label: 'Mon Activité',
         },
         {
-            path: '/user/notifications',
-            icon: Bell,
-            label: 'Notifications',
+            path: '/user/profile',
+            icon: UserCircle,
+            label: 'Mon Profil',
         }
     ];
 

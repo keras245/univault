@@ -34,10 +34,11 @@ api.interceptors.response.use(
             const { status, data } = error.response;
 
             if (status === 401) {
-                // Token expiré ou invalide
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
+                if (!error.config.url.includes('change-password')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }
             }
 
             // Retourner le message d'erreur du serveur

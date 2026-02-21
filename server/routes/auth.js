@@ -8,12 +8,13 @@ import {
 } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
 import { authorize } from '../middleware/authorize.js';
-import { loginLimiter } from '../middleware/rateLimiter.js';
+import { loginLimiter, changePasswordLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
 // Routes publiques
 router.post('/login', loginLimiter, login);
+router.put('/change-password', authenticate, changePasswordLimiter, changePassword);
 
 // Routes protégées
 router.get('/me', authenticate, getMe);

@@ -1,21 +1,37 @@
 import rateLimit from 'express-rate-limit';
 
-// Rate limiter pour les tentatives de connexion
+// Rate limiter login — par email (pas par IP)
 export const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 tentatives maximum
+    max: 10, // 👈 augmenté à 10 tentatives
+    keyGenerator: (req) => req.body.email || req.ip, // 👈 par email, pas par IP
     message: {
         success: false,
         message: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
     },
     standardHeaders: true,
     legacyHeaders: false,
+    skipSuccessfulRequests: true, // 👈 ne compte pas les connexions réussies
 });
 
-// Rate limiter pour les uploads
+// Rate limiter change-password — plus permissif
+export const changePasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    keyGenerator: (req) => req.user?._id?.toString() || req.ip, // 👈 par utilisateur
+    message: {
+        success: false,
+        message: 'Trop de tentatives. Veuillez réessayer dans 15 minutes.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true,
+});
+
+// Rate limiter uploads
 export const uploadLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 heure
-    max: 20, // 20 uploads maximum par heure
+    windowMs: 60 * 60 * 1000,
+    max: 20,
     message: {
         success: false,
         message: 'Limite d\'uploads atteinte. Veuillez réessayer plus tard.',
@@ -24,10 +40,10 @@ export const uploadLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Rate limiter général pour l'API
+// Rate limiter général
 export const apiLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 200, // 200 requêtes maximum par minute
+    windowMs: 1 * 60 * 1000,
+    max: 200,
     message: {
         success: false,
         message: 'Trop de requêtes. Veuillez réessayer plus tard.',
