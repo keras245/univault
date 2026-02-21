@@ -250,3 +250,40 @@
         transform: translateX(-10px);
     }
 }
+
+
+/* Mode collapsed */
+.sidebar--collapsed .sidebar-header {
+    padding: var(--spacing-md);
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar--collapsed .sidebar-nav-item {
+    justify-content: center;
+    padding: var(--spacing-md);
+    gap: 0;
+}
+
+.sidebar--collapsed .sidebar-profile {
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar--collapsed .sidebar-user {
+    justify-content: center;
+    padding: var(--spacing-sm);
+    width: 100%;
+}
+
+.sidebar--collapsed .sidebar-logout {
+    justify-content: center;
+    padding: var(--spacing-md);
+    gap: 0;
+}
+
+.sidebar--collapsed .sidebar-theme-toggle {
+    margin-bottom: var(--spacing-sm);
+}
