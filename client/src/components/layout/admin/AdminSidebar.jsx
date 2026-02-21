@@ -25,17 +25,19 @@ const AdminSidebar = () => {
         navigate('/login');
     };
 
-    const menuItems = [
+    const isScolarite = user?.service === 'Scolarité';
+
+        const menuItems = [
         {
             path: '/admin/dashboard',
             icon: LayoutDashboard,
             label: 'Tableau de bord',
         },
-        {
+        ...(isScolarite ? [{
             path: '/admin/students',
             icon: GraduationCap,
             label: 'Étudiants',
-        },
+        }] : []),
         {
             path: '/admin/documents',
             icon: FileText,

@@ -13,15 +13,7 @@ const documentSchema = new mongoose.Schema({
     service: {
         type: String,
         required: [true, 'Le service est requis'],
-        enum: [
-            'Scolarité',
-            'Comptabilité',
-            'Ressources Humaines',
-            'Génie Informatique',
-            'Droit',
-            'Administration',
-            'Autre',
-        ],
+        trim: true,
     },
     category: {
         type: String,

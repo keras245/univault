@@ -80,9 +80,6 @@ export const documentsAPI = {
     getById: (id) => api.get(`/documents/${id}`),
     update: (id, data) => api.put(`/documents/${id}`, data),
     delete: (id) => api.delete(`/documents/${id}`),
-    addVersion: (id, formData) => api.post(`/documents/${id}/version`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    }),
 };
 
 
