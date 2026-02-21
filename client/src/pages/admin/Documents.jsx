@@ -12,9 +12,6 @@ import '../super-admin/Administrateur.css';
 const AdminDocuments = () => {
     const { user } = useAuthStore();
     const isScolarite = user?.service === 'Scolarité';
-    console.log('👤 user:', user);
-    console.log('🏢 service:', user?.service);
-    console.log('📚 isScolarite:', isScolarite);
 
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);

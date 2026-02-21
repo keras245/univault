@@ -156,7 +156,7 @@
     text-align: left;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }

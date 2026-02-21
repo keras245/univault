@@ -147,7 +147,7 @@
 
 .admin-table-header {
     background-color: var(--color-bg-secondary);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 2px solid var(--color-border);
 }
 
 .admin-table-header th {
@@ -155,7 +155,7 @@
     text-align: left;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);   /* ← était text-secondary */
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }

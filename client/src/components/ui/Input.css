@@ -98,3 +98,39 @@ textarea.input {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
 }
+
+/* === LIGHT MODE OVERRIDES === */
+
+/* Card glass */
+body.light .card--glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Inputs */
+body.light .input {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+    color: #111827;
+}
+
+body.light .input::placeholder {
+    color: #9ca3af;
+}
+
+body.light .input:focus {
+    border-color: var(--color-primary);
+    background-color: #ffffff;
+}
+
+body.light .input-icon {
+    color: #9ca3af;
+}
+
+body.light .input-label {
+    color: #111827;
+}
+
