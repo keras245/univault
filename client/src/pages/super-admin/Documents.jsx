@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Plus, Search, Download, Eye, Trash2, Upload as UploadIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
-import { studentDocumentsAPI, studentsAPI } from '../../config/api';
+import { documentsAPI, studentDocumentsAPI, servicesAPI } from '../../config/api';
 import toast from 'react-hot-toast';
 import UploadDocumentModal from '../../components/scolarite/UploadDocumentModal';
 import '../super-admin/Administrateur.css';
@@ -13,38 +13,46 @@ const SuperAdminDocuments = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showUploadModal, setShowUploadModal] = useState(false);
-    const [stats, setStats] = useState({ total: 0, byType: {} });
+    const [stats, setStats] = useState({ total: 0 });
     const [currentPage, setCurrentPage] = useState(1);
-const [totalPages, setTotalPages] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [activeTab, setActiveTab] = useState('Tous');
+    const [services, setServices] = useState([]);
 
-    // Debounce de la recherche (attend 500ms après la dernière frappe)
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchTerm);
-        }, 500);
+        const fetchServices = async () => {
+            try {
+                const response = await servicesAPI.getAll();
+                setServices(response.data.data || []);
+            } catch (error) {
+                console.error('Erreur services:', error);
+            }
+        };
+        fetchServices();
+    }, []);
 
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    const fetchAllDocuments = async (page = 1) => {
+    useEffect(() => {
+        setCurrentPage(1);
+        fetchDocuments(1);
+    }, [debouncedSearch, activeTab]);
+
+    const fetchDocuments = async (page = 1) => {
         try {
             setLoading(true);
-            const response = await studentsAPI.getAllDocuments({ 
+            const response = await documentsAPI.getAllGlobal({
                 search: debouncedSearch,
                 page,
-                limit: 20
+                limit: 20,
+                service: activeTab !== 'Tous' ? activeTab : undefined
             });
-            const docs = response.data.data || [];
-            
-            // Recalculer byType
-            const byType = {};
-            docs.forEach(doc => {
-                byType[doc.type] = (byType[doc.type] || 0) + 1;
-            });
-
-            setDocuments(docs);
+            setDocuments(response.data.data || []);
             setTotalPages(response.data.pagination.pages);
-            setStats({ total: response.data.pagination.total, byType }); // 👈
+            setStats({ total: response.data.pagination.total });
         } catch (error) {
             console.error('Erreur:', error);
             toast.error('Erreur lors du chargement des documents');
@@ -53,33 +61,27 @@ const [totalPages, setTotalPages] = useState(1);
         }
     };
 
-    // Réinitialiser la page quand la recherche change
-    useEffect(() => {
-        setCurrentPage(1);
-        fetchAllDocuments(1);
-    }, [debouncedSearch]);
-
     const handleDelete = async (doc) => {
-        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) return;
-
+        if (!window.confirm('Supprimer ce document ?')) return;
         try {
-            await studentDocumentsAPI.delete(doc.student._id, doc._id);
+            if (doc.source === 'scolarite') {
+                await studentDocumentsAPI.delete(doc.studentId, doc.originalId);
+            } else {
+                await documentsAPI.delete(doc.originalId);
+            }
             toast.success('Document supprimé');
-            fetchAllDocuments();
+            fetchDocuments(currentPage);
         } catch (error) {
-            console.error('Erreur:', error);
             toast.error('Erreur lors de la suppression');
         }
     };
 
-    const handlePreview = (doc) => {
-        window.open(doc.signedUrl || doc.fileUrl, '_blank');
-    };
+    const handlePreview = (doc) => window.open(doc.fileUrl, '_blank');
 
     const handleDownload = (doc) => {
         const link = document.createElement('a');
-        link.href = doc.signedUrl || doc.fileUrl;
-        link.download = doc.fileName;
+        link.href = doc.fileUrl;
+        link.download = doc.displayName;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
@@ -88,37 +90,27 @@ const [totalPages, setTotalPages] = useState(1);
     };
 
     const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
+        if (!bytes) return '-';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
     };
 
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
-    };
+    const formatDate = (date) => new Date(date).toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+    });
+
+    const tabs = ['Tous', ...services.map(s => s.name)];
 
     return (
         <SuperAdminLayout>
             <div className="admin-page">
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="admin-header"
-                >
+                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="admin-header">
                     <div className="admin-header-top">
                         <div>
-                            <h1 className="admin-header-title">
-                                Documents Étudiants
-                            </h1>
-                            <p className="admin-header-subtitle">
-                                Gérez tous les documents des étudiants
-                            </p>
+                            <h1 className="admin-header-title">Documents</h1>
+                            <p className="admin-header-subtitle">Vue globale de tous les documents archivés</p>
                         </div>
                         <button className="btn-primary" onClick={() => setShowUploadModal(true)}>
                             <Plus size={20} />
@@ -126,12 +118,35 @@ const [totalPages, setTotalPages] = useState(1);
                         </button>
                     </div>
 
-                    {/* Search Bar */}
-                    <div className="admin-search">
+                    {/* Onglets */}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+                        {tabs.map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                style={{
+                                    padding: '0.4rem 1rem',
+                                    borderRadius: '2rem',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 500,
+                                    background: activeTab === tab ? 'var(--color-primary)' : 'var(--color-surface)',
+                                    color: activeTab === tab ? '#fff' : 'var(--color-text-secondary)',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Recherche */}
+                    <div className="admin-search" style={{ marginTop: '1rem' }}>
                         <Search className="admin-search-icon" size={20} />
                         <input
                             type="text"
-                            placeholder="Rechercher par matricule ou nom d'étudiant..."
+                            placeholder="Rechercher un document..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="admin-search-input"
@@ -139,17 +154,14 @@ const [totalPages, setTotalPages] = useState(1);
                     </div>
                 </motion.div>
 
-                {/* Stats Cards */}
+                {/* Stats */}
                 <div className="admin-stats">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="admin-stat-card"
-                    >
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="admin-stat-card">
                         <div className="admin-stat-content">
                             <div>
-                                <p className="admin-stat-label">Total Documents</p>
+                                <p className="admin-stat-label">
+                                    {activeTab === 'Tous' ? 'Total Documents' : `Documents — ${activeTab}`}
+                                </p>
                                 <p className="admin-stat-value">{stats.total}</p>
                             </div>
                             <div className="admin-stat-icon admin-stat-icon--blue">
@@ -157,34 +169,10 @@ const [totalPages, setTotalPages] = useState(1);
                             </div>
                         </div>
                     </motion.div>
-                    {Object.entries(stats.byType).slice(0, 2).map(([type, count], index) => (
-                        <motion.div
-                            key={type}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 + (index * 0.1) }}
-                            className="admin-stat-card"
-                        >
-                            <div className="admin-stat-content">
-                                <div>
-                                    <p className="admin-stat-label">{type}</p>
-                                    <p className="admin-stat-value">{count}</p>
-                                </div>
-                                <div className="admin-stat-icon admin-stat-icon--green">
-                                    <UploadIcon size={24} />
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
                 </div>
 
-                {/* Liste des documents */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="admin-content"
-                >
+                {/* Table */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="admin-content">
                     {loading ? (
                         <div className="admin-loading">
                             <div className="admin-loading-spinner"></div>
@@ -194,15 +182,16 @@ const [totalPages, setTotalPages] = useState(1);
                         <div className="admin-empty">
                             <FileText className="admin-empty-icon" size={64} />
                             <h3 className="admin-empty-title">Aucun document</h3>
-                            <p className="admin-empty-text">Aucun document étudiant trouvé</p>
+                            <p className="admin-empty-text">Aucun document trouvé</p>
                         </div>
                     ) : (
                         <div className="admin-table-container">
                             <table className="admin-table">
                                 <thead className="admin-table-header">
                                     <tr>
-                                        <th>Matricule</th>
-                                        <th>Étudiant</th>
+                                        <th>Service</th>
+                                        <th>Nom / Étudiant</th>
+                                        {activeTab === 'Scolarité' && <th>Matricule</th>}
                                         <th>Type</th>
                                         <th>Taille</th>
                                         <th>Date</th>
@@ -213,42 +202,33 @@ const [totalPages, setTotalPages] = useState(1);
                                     {documents.map((doc) => (
                                         <tr key={doc._id}>
                                             <td>
-                                                <span className="admin-badge admin-badge--admin">{doc.student.matricule}</span>
+                                                <span className="admin-badge admin-badge--admin">{doc.service}</span>
                                             </td>
                                             <td>
                                                 <div className="admin-table-user">
                                                     <div className="admin-table-avatar">
-                                                        {doc.student.firstName.charAt(0)}{doc.student.lastName.charAt(0)}
+                                                        {doc.displayName?.charAt(0)}
                                                     </div>
-                                                    <div className="admin-table-user-info">
-                                                        <p className="admin-table-user-name">{doc.student.firstName} {doc.student.lastName}</p>
-                                                    </div>
+                                                    <p className="admin-table-user-name">{doc.displayName}</p>
                                                 </div>
                                             </td>
+                                            {activeTab === 'Scolarité' && (
+                                                <td>
+                                                    <span className="admin-badge admin-badge--admin">{doc.matricule}</span>
+                                                </td>
+                                            )}
                                             <td>{doc.type}</td>
                                             <td>{formatFileSize(doc.fileSize)}</td>
-                                            <td>{formatDate(doc.uploadedAt)}</td>
+                                            <td>{formatDate(doc.date)}</td>
                                             <td>
                                                 <div className="admin-table-actions">
-                                                    <button
-                                                        className="admin-action-btn admin-action-btn--view"
-                                                        onClick={() => handlePreview(doc)}
-                                                        title="Prévisualiser"
-                                                    >
+                                                    <button className="admin-action-btn admin-action-btn--view" onClick={() => handlePreview(doc)} title="Prévisualiser">
                                                         <Eye size={18} />
                                                     </button>
-                                                    <button
-                                                        className="admin-action-btn admin-action-btn--edit"
-                                                        onClick={() => handleDownload(doc)}
-                                                        title="Télécharger"
-                                                    >
+                                                    <button className="admin-action-btn admin-action-btn--edit" onClick={() => handleDownload(doc)} title="Télécharger">
                                                         <Download size={18} />
                                                     </button>
-                                                    <button
-                                                        className="admin-action-btn admin-action-btn--delete"
-                                                        onClick={() => handleDelete(doc)}
-                                                        title="Supprimer"
-                                                    >
+                                                    <button className="admin-action-btn admin-action-btn--delete" onClick={() => handleDelete(doc)} title="Supprimer">
                                                         <Trash2 size={18} />
                                                     </button>
                                                 </div>
@@ -259,44 +239,14 @@ const [totalPages, setTotalPages] = useState(1);
                             </table>
 
                             {totalPages > 1 && (
-                            <div className="admin-pagination">
-                                <button
-                                    onClick={() => { setCurrentPage(1); fetchAllDocuments(1); }}
-                                    disabled={currentPage === 1}
-                                    className="admin-pagination-btn"
-                                    title="Première page"
-                                >
-                                    <ChevronsLeft size={16} />
-                                </button>
-                                <button
-                                    onClick={() => { setCurrentPage(p => p - 1); fetchAllDocuments(currentPage - 1); }}
-                                    disabled={currentPage === 1}
-                                    className="admin-pagination-btn"
-                                    title="Page précédente"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <span className="admin-pagination-info">{currentPage} / {totalPages}</span>
-                                <button
-                                    onClick={() => { setCurrentPage(p => p + 1); fetchAllDocuments(currentPage + 1); }}
-                                    disabled={currentPage === totalPages}
-                                    className="admin-pagination-btn"
-                                    title="Page suivante"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                                <button
-                                    onClick={() => { setCurrentPage(totalPages); fetchAllDocuments(totalPages); }}
-                                    disabled={currentPage === totalPages}
-                                    className="admin-pagination-btn"
-                                    title="Dernière page"
-                                >
-                                    <ChevronsRight size={16} />
-                                </button>
-                            </div>
-                        )}
-
-
+                                <div className="admin-pagination">
+                                    <button onClick={() => { setCurrentPage(1); fetchDocuments(1); }} disabled={currentPage === 1} className="admin-pagination-btn"><ChevronsLeft size={16} /></button>
+                                    <button onClick={() => { setCurrentPage(p => p - 1); fetchDocuments(currentPage - 1); }} disabled={currentPage === 1} className="admin-pagination-btn"><ChevronLeft size={16} /></button>
+                                    <span className="admin-pagination-info">{currentPage} / {totalPages}</span>
+                                    <button onClick={() => { setCurrentPage(p => p + 1); fetchDocuments(currentPage + 1); }} disabled={currentPage === totalPages} className="admin-pagination-btn"><ChevronRight size={16} /></button>
+                                    <button onClick={() => { setCurrentPage(totalPages); fetchDocuments(totalPages); }} disabled={currentPage === totalPages} className="admin-pagination-btn"><ChevronsRight size={16} /></button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </motion.div>
@@ -305,10 +255,7 @@ const [totalPages, setTotalPages] = useState(1);
                     <UploadDocumentModal
                         isOpen={showUploadModal}
                         onClose={() => setShowUploadModal(false)}
-                        onSuccess={() => {
-                            setShowUploadModal(false);
-                            fetchAllDocuments();
-                        }}
+                        onSuccess={() => { setShowUploadModal(false); fetchDocuments(); }}
                         showSearch={true}
                     />
                 )}

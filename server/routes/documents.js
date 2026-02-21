@@ -3,6 +3,7 @@ import {
     uploadDocument,
     getDocuments,
     getDocument,
+    getAllDocumentsGlobal,
     updateDocument,
     deleteDocument,
     addDocumentVersion,
@@ -29,6 +30,7 @@ router.post(
 );
 
 // Liste des documents
+router.get('/all', getAllDocumentsGlobal);
 router.get('/', getDocuments);
 
 // Détails d'un document

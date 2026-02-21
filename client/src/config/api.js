@@ -76,6 +76,7 @@ export const documentsAPI = {
     upload: (formData) => api.post('/documents/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
+    getAllGlobal: (params) => api.get('/documents/all', { params }),
     getAll: (params) => api.get('/documents', { params }),
     getById: (id) => api.get(`/documents/${id}`),
     update: (id, data) => api.put(`/documents/${id}`, data),

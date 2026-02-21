@@ -1,4 +1,5 @@
 import Document from '../models/Document.js';
+import StudentDocument from '../models/StudentDocument.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 import fs from 'fs/promises';
 
@@ -224,6 +225,120 @@ export const getDocument = async (req, res) => {
             message: 'Erreur lors de la récupération du document.',
             error: error.message,
         });
+    }
+};
+
+
+export const getAllDocumentsGlobal = async (req, res) => {
+    try {
+        const { search, page = 1, limit = 20, service } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // ── Documents Scolarité (StudentDocument) ──
+        const studentFilter = {};
+        if (service && service !== 'Tous') {
+            if (service === 'Scolarité') studentFilter['student'] = { $exists: true };
+            else studentFilter['student'] = { $exists: false }; // sera exclu
+        }
+
+        let studentDocs = [];
+        let studentTotal = 0;
+
+        if (!service || service === 'Tous' || service === 'Scolarité') {
+            const studentQuery = {};
+            if (search) {
+                const students = await (await import('../models/Student.js')).default.find({
+                    $or: [
+                        { matricule: { $regex: search, $options: 'i' } },
+                        { firstName: { $regex: search, $options: 'i' } },
+                        { lastName: { $regex: search, $options: 'i' } }
+                    ]
+                }, '_id');
+                studentQuery.student = { $in: students.map(s => s._id) };
+            }
+
+            studentTotal = await StudentDocument.countDocuments(studentQuery);
+            studentDocs = await StudentDocument.find(studentQuery)
+                .populate('student', 'matricule firstName lastName')
+                .populate('uploadedBy', 'firstName lastName')
+                .sort({ uploadedAt: -1 })
+                .lean();
+
+            // Normaliser
+            studentDocs = studentDocs.map(doc => ({
+                _id: doc._id,
+                source: 'scolarite',
+                service: 'Scolarité',
+                displayName: `${doc.student?.firstName} ${doc.student?.lastName}`,
+                matricule: doc.student?.matricule,
+                type: doc.type,
+                fileSize: doc.fileSize,
+                fileUrl: doc.fileUrl,
+                date: doc.uploadedAt,
+                uploadedBy: doc.uploadedBy,
+                studentId: doc.student?._id,
+                originalId: doc._id
+            }));
+        }
+
+        // ── Documents génériques (Document) ──
+        let genericDocs = [];
+        let genericTotal = 0;
+
+        if (!service || service === 'Tous' || service !== 'Scolarité') {
+            const genericFilter = {};
+            if (service && service !== 'Tous' && service !== 'Scolarité') {
+                genericFilter.service = service;
+            } else if (!service || service === 'Tous') {
+                genericFilter.service = { $ne: 'Scolarité' };
+            }
+            if (search) {
+                genericFilter.$or = [
+                    { title: { $regex: search, $options: 'i' } },
+                    { category: { $regex: search, $options: 'i' } }
+                ];
+            }
+
+            genericTotal = await Document.countDocuments(genericFilter);
+            genericDocs = await Document.find(genericFilter)
+                .populate('uploadedBy', 'firstName lastName')
+                .sort({ createdAt: -1 })
+                .lean();
+
+            genericDocs = genericDocs.map(doc => ({
+                _id: doc._id,
+                source: 'generic',
+                service: doc.service,
+                displayName: doc.title,
+                type: doc.category,
+                fileSize: doc.fileSize,
+                fileUrl: doc.fileUrl,
+                date: doc.createdAt,
+                uploadedBy: doc.uploadedBy,
+                originalId: doc._id
+            }));
+        }
+
+        // ── Fusionner et paginer ──
+        const allDocs = [...studentDocs, ...genericDocs]
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const total = studentTotal + genericTotal;
+        const paginated = allDocs.slice(skip, skip + parseInt(limit));
+
+        res.json({
+            success: true,
+            data: paginated,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error('Erreur getAllDocumentsGlobal:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
