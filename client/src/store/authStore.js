@@ -32,6 +32,26 @@ const useAuthStore = create(
             updateUser: (user) => {
                 set({ user });
             },
+
+            // 👇 Ajoute ici
+            verifyToken: async () => {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    set({ user: null, token: null, isAuthenticated: false });
+                    return;
+                }
+                try {
+                    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (!response.ok) {
+                        localStorage.removeItem('token');
+                        set({ user: null, token: null, isAuthenticated: false });
+                    }
+                } catch {
+                    set({ user: null, token: null, isAuthenticated: false });
+                }
+            },
         }),
         {
             name: 'auth-storage',

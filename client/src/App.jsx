@@ -85,11 +85,16 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   const { theme } = useThemeStore();
+  const { verifyToken } = useAuthStore();
 
   // Appliquer le thème au montage
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
+
+  useEffect(() => {
+    verifyToken();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
