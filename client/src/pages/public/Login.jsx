@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -13,6 +13,7 @@ import './Login.css';
 const Login = () => {
     const navigate = useNavigate();
     const login = useAuthStore((state) => state.login);
+    const [showPassword, setShowPassword] = useState(false);
 
     const [formData, setFormData] = useState({
         email: '',
@@ -126,9 +127,10 @@ const Login = () => {
                             required
                         />
 
+                        <div style={{ position: 'relative' }}>
                         <Input
                             label="Mot de passe"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             name="password"
                             placeholder="••••••••"
                             value={formData.password}
@@ -137,6 +139,25 @@ const Login = () => {
                             leftIcon={<Lock size={18} />}
                             required
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(p => !p)}
+                            style={{
+                                position: 'absolute',
+                                right: '0.75rem',
+                                top: '3.1rem',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--color-text-secondary)',
+                                padding: 0,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                    </div>
 
                         <Button
                             type="submit"

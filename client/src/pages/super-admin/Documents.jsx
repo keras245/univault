@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FileText, Plus, Search, Download, Eye, Trash2, Upload as UploadIcon, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { FileText, Search, Download, Eye, Trash2, Upload as ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
 import { documentsAPI, studentDocumentsAPI, servicesAPI } from '../../config/api';
 import toast from 'react-hot-toast';
-import UploadDocumentModal from '../../components/scolarite/UploadDocumentModal';
 import '../super-admin/Administrateur.css';
 
 const SuperAdminDocuments = () => {
@@ -12,7 +10,6 @@ const SuperAdminDocuments = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [showUploadModal, setShowUploadModal] = useState(false);
     const [stats, setStats] = useState({ total: 0 });
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -71,7 +68,7 @@ const SuperAdminDocuments = () => {
             }
             toast.success('Document supprimé');
             fetchDocuments(currentPage);
-        } catch (error) {
+        } catch (errror) {
             toast.error('Erreur lors de la suppression');
         }
     };
@@ -112,10 +109,6 @@ const SuperAdminDocuments = () => {
                             <h1 className="admin-header-title">Documents</h1>
                             <p className="admin-header-subtitle">Vue globale de tous les documents archivés</p>
                         </div>
-                        <button className="btn-primary" onClick={() => setShowUploadModal(true)}>
-                            <Plus size={20} />
-                            Ajouter un document
-                        </button>
                     </div>
 
                     {/* Onglets */}
@@ -251,14 +244,6 @@ const SuperAdminDocuments = () => {
                     )}
                 </motion.div>
 
-                {showUploadModal && (
-                    <UploadDocumentModal
-                        isOpen={showUploadModal}
-                        onClose={() => setShowUploadModal(false)}
-                        onSuccess={() => { setShowUploadModal(false); fetchDocuments(); }}
-                        showSearch={true}
-                    />
-                )}
             </div>
         </SuperAdminLayout>
     );

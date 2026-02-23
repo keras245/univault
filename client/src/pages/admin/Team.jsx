@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Plus, Search, Pencil, Trash2, UserCheck, UserX } from 'lucide-react';
+import { Users, Plus, Search, Pencil, Trash2, UserCheck, UserX, Eye, EyeOff } from 'lucide-react';
 import AdminLayout from '../../components/layout/admin/AdminLayout';
 import { usersAPI } from '../../config/api';
 import useAuthStore from '../../store/authStore';
@@ -16,6 +16,7 @@ const AdminTeam = () => {
     const [showForm, setShowForm] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', email: '', password: '', role: 'user'
     });
@@ -183,17 +184,24 @@ const AdminTeam = () => {
                                         />
                                     </div>
                                     <div className="input-wrapper" style={{ marginBottom: 0 }}>
-                                        <label className="input-label">
-                                            {editingUser ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe *'}
-                                        </label>
+                                    <label className="input-label">
+                                        {editingUser ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe *'}
+                                    </label>
+                                    <div style={{ position: 'relative' }}>
                                         <input
-                                            type="password"
+                                            type={showPassword ? 'text' : 'password'}
                                             value={formData.password}
                                             onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))}
                                             placeholder={editingUser ? 'Laisser vide pour ne pas changer' : 'Mot de passe'}
                                             className="admin-search-input"
+                                            style={{ paddingRight: '2.5rem' }}
                                         />
+                                        <button type="button" onClick={() => setShowPassword(p => !p)}
+                                            style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 0, display: 'flex' }}>
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
                                     </div>
+                                </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                                     <button type="button" onClick={handleCancel} className="admin-action-btn admin-action-btn--delete" style={{ padding: '0.6rem 1.2rem' }}>

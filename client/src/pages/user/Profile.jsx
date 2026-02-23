@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { UserCircle, Mail, Building2, Lock, Check } from 'lucide-react';
+import { UserCircle, Mail, Building2, Lock, Check, Eye, EyeOff } from 'lucide-react';
 import UserLayout from '../../components/layout/user/UserLayout';
 import { authAPI } from '../../config/api';
 import useAuthStore from '../../store/authStore';
@@ -15,6 +15,9 @@ const UserProfile = () => {
         confirmPassword: ''
     });
     const [saving, setSaving] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handlePasswordChange = async (e) => {
         e.preventDefault();
@@ -99,38 +102,50 @@ const UserProfile = () => {
                         </h3>
 
                         <form onSubmit={handlePasswordChange} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div>
+                            <div style={{ position: 'relative' }}>
                                 <label className="input-label">Mot de passe actuel</label>
                                 <input
-                                    type="password"
+                                    type={showCurrentPassword ? 'text' : 'password'}
                                     value={passwords.currentPassword}
                                     onChange={(e) => setPasswords(p => ({ ...p, currentPassword: e.target.value }))}
                                     placeholder="••••••••"
                                     className="admin-search-input"
-                                    style={{ width: '100%' }}
+                                    style={{ width: '100%', paddingRight: '2.5rem' }}
                                 />
+                                <button type="button" onClick={() => setShowCurrentPassword(p => !p)}
+                                    style={{ position: 'absolute', right: '0.75rem', top: '65%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 0, display: 'flex' }}>
+                                    {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
-                            <div>
+                            <div style={{ position: 'relative' }}>
                                 <label className="input-label">Nouveau mot de passe</label>
                                 <input
-                                    type="password"
+                                    type={showNewPassword ? 'text' : 'password'}
                                     value={passwords.newPassword}
                                     onChange={(e) => setPasswords(p => ({ ...p, newPassword: e.target.value }))}
                                     placeholder="••••••••"
                                     className="admin-search-input"
-                                    style={{ width: '100%' }}
+                                    style={{ width: '100%', paddingRight: '2.5rem' }}
                                 />
+                                <button type="button" onClick={() => setShowNewPassword(p => !p)}
+                                    style={{ position: 'absolute', right: '0.75rem', top: '65%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 0, display: 'flex' }}>
+                                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
-                            <div>
+                            <div style={{ position: 'relative' }}>
                                 <label className="input-label">Confirmer le mot de passe</label>
                                 <input
-                                    type="password"
+                                    type={showConfirmPassword ? 'text' : 'password'}
                                     value={passwords.confirmPassword}
                                     onChange={(e) => setPasswords(p => ({ ...p, confirmPassword: e.target.value }))}
                                     placeholder="••••••••"
                                     className="admin-search-input"
-                                    style={{ width: '100%' }}
+                                    style={{ width: '100%', paddingRight: '2.5rem' }}
                                 />
+                                <button type="button" onClick={() => setShowConfirmPassword(p => !p)}
+                                    style={{ position: 'absolute', right: '0.75rem', top: '65%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 0, display: 'flex' }}>
+                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                             <button type="submit" className="btn-primary" disabled={saving} style={{ marginTop: '0.5rem' }}>
                                 <Check size={18} />
