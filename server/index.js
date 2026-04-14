@@ -9,7 +9,7 @@ import { apiLimiter } from './middleware/rateLimiter.js';
 import fs from 'fs';
 import path from 'path';
 
-// Import des routes
+// Import des routes, je prevois de tout mettre dans un fichier index.js dans routes
 import authRoutes from './routes/auth.js';
 import documentRoutes from './routes/documents.js';
 import studentRoutes from './routes/students.js';

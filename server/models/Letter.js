@@ -57,7 +57,6 @@ letterSchema.pre('save', async function (next) {
 });
 
 // Index pour améliorer les performances
-letterSchema.index({ reference: 1 });
 letterSchema.index({ status: 1, createdAt: -1 });
 
 const Letter = mongoose.model('Letter', letterSchema);

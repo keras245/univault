@@ -80,20 +80,21 @@ const AdminDocuments = () => {
         }
     };
 
-    const handlePreview = (doc) => {
-        window.open(doc.signedUrl || doc.fileUrl, '_blank');
-    };
 
-    const handleDownload = (doc) => {
-        const link = document.createElement('a');
-        link.href = doc.signedUrl || doc.fileUrl;
-        link.download = doc.fileName || doc.title;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success('Téléchargement lancé');
-    };
+    const handlePreview = (doc) => {
+    window.open(doc.signedUrl || doc.fileUrl || doc.url, '_blank');
+};
+
+const handleDownload = (doc) => {
+    const link = document.createElement('a');
+    link.href = doc.signedUrl || doc.fileUrl || doc.url;
+    link.download = doc.fileName || doc.title || 'document';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Téléchargement lancé');
+};
 
     const formatFileSize = (bytes) => {
         if (!bytes) return '-';

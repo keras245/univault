@@ -59,7 +59,12 @@ const UserDocuments = () => {
     };
 
     const handlePreview = (doc) => {
-        window.open(doc.signedUrl || doc.fileUrl, '_blank');
+    const url = doc.fileUrl || doc.signedUrl || doc.url;
+    if (!url) {
+        toast.error('URL du document introuvable');
+        return;
+    }
+    window.open(url, '_blank');
     };
 
     const handleDownload = (doc) => {

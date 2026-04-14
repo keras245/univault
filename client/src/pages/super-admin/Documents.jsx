@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { FileText, Search, Download, Eye, Trash2, Upload as ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import SuperAdminLayout from '../../components/layout/super-admin/SuperAdminLayout';
 import { documentsAPI, studentDocumentsAPI, servicesAPI } from '../../config/api';
@@ -73,7 +74,15 @@ const SuperAdminDocuments = () => {
         }
     };
 
-    const handlePreview = (doc) => window.open(doc.fileUrl, '_blank');
+    const handlePreview = (doc) => {
+    console.log('DOC:', JSON.stringify(doc, null, 2));
+    const url = doc.fileUrl || doc.signedUrl || doc.url;
+    if (!url) {
+        toast.error('URL du document introuvable');
+        return;
+    }
+    window.open(url, '_blank');
+};
 
     const handleDownload = (doc) => {
         const link = document.createElement('a');

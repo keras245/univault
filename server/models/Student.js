@@ -40,7 +40,6 @@ const studentSchema = new mongoose.Schema({
 });
 
 // Index pour recherche rapide
-studentSchema.index({ matricule: 1 });
 studentSchema.index({ firstName: 1, lastName: 1 });
 studentSchema.index({ createdBy: 1 });
 
